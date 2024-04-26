@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="VStyle.css">
+    <title>Point-Cloud-Processing</title>
+</head>
+<body>
+    <div id="objViewCont" style="display: flex; flex-wrap: wrap; justify-content: center; width: 100%;">
+        <div class="objViewWin">
+            <div class="egPic"></div>
+            <canvas width="1127" height="943" style="display: block; width: 902px; height: 755px;"></canvas>
+            <p class="hint" style="">Drag and Drop a ply file here</p>
+        </div>
+        <div class="objViewWin">
+            <div class="egPic" style="background-image: url(bleft1.png)"></div>
+            <canvas width="1127" height="943" style="display: block; width: 902px; height: 755px;">Drag and Drop a ply file here</canvas>
+            <p class="hint">Drag and Drop a ply file here</p>
+        </div>
+    </div>
+    <button type="button" id="combine" class="special-btn">Combine</button>
+    <button type="button" id="Addbtn" class="special-btn" style="right: 3%; bottom: 3%; top: unset">Add viewport</button>
+    <button type="button" id="Removebtn" class="special-btn" style="right: calc(3% + 9em); bottom: 3%; top: unset">Remove viewport</button>
+    <div class="option-menu">
+        <button type="button" id="SetPointsbtn">Set points</button>
+        <button type="button">set color-design</button>
+        <button type="button">save</button>
+        <button type="button">import</button>
+        <button type="button">export</button>
+        <button type="button" class="hide">hide bar</button>
+    </div>
+    <div id="root"></div>
+    <!--<script type="module" src="/src/main.jsx"></script>-->
+
+    <script type="module" src="Script1.js"></script>
+</body>
+</html>
