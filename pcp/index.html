@@ -1,6 +1,14 @@
+
 <!doctype html>
 <html lang="en">
 <head>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://threejs.org/build/three.module.js"
+          }
+        }
+    </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,15 +16,13 @@
     <title>Point-Cloud-Processing</title>
 </head>
 <body>
-    <div id="objViewCont" style="display: flex; flex-wrap: wrap; justify-content: center; width: 100%;">
+    <div id="objViewCont">
         <div class="objViewWin">
-            <div class="egPic"></div>
-            <canvas width="1127" height="943" style="display: block; width: 902px; height: 755px;"></canvas>
+            <canvas id="c"></canvas>
             <p class="hint" style="">Drag and Drop a ply file here</p>
         </div>
         <div class="objViewWin">
-            <div class="egPic" style="background-image: url(bleft1.png)"></div>
-            <canvas width="1127" height="943" style="display: block; width: 902px; height: 755px;">Drag and Drop a ply file here</canvas>
+            <canvas></canvas>
             <p class="hint">Drag and Drop a ply file here</p>
         </div>
     </div>
@@ -32,8 +38,9 @@
         <button type="button" class="hide">hide bar</button>
     </div>
     <div id="root"></div>
-    <!--<script type="module" src="/src/main.jsx"></script>-->
 
     <script type="module" src="Script1.js"></script>
+
+    <!--<script type="module" src="./src/Rendering.js"></script>-->
 </body>
 </html>

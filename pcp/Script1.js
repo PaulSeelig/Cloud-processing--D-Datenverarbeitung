@@ -1,11 +1,17 @@
 import ReactSetPointMenu from "./src/ReactComponent";
-import React from 'react';
+//import React from 'react';
 import ReactDOM from 'react-dom/client';
+import RenderOnCanvas from "./src/Rendering";
 function setup() {
     document.getElementById("Addbtn").addEventListener("click", AddView);
     document.getElementById("Removebtn").addEventListener("click", RemoveView);
     document.getElementById("SetPointsbtn").addEventListener("click", OpenSetPointsMenu);
+
+    //AddDropEvent(document.getElementById("objViewCont").firstChild);
+    //document.getElementById("objViewCont").firstChild.firstChild.addEventListener("click", RenderOnCanvas)
+    RenderOnCanvas();
 }
+//function AddDropEvent(objview) { objview.addEventListener("click", RenderOnCanvas); }
 function AddView() {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
     if (viewcont.childElementCount < 12) {
@@ -21,7 +27,6 @@ function AddView() {
             combBtn.style.right = "calc(3% + 18em)";
             combBtn.style.top = "unset";
         }
-
     }
 }
 function RemoveView() {
@@ -33,6 +38,7 @@ function RemoveView() {
         }
     }
 }
+
 function OpenSetPointsMenu() {
     var roo = document.getElementById("root");
     roo.childElementCount > 0 ? roo.childNodes.forEach(roo.removeChild(roo.firstChild)) : ReactDOM.createRoot(roo).render(ReactSetPointMenu());
