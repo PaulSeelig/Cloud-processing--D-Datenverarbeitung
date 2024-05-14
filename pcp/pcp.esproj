@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="src\RenderOnCanvas.js" />
+    <None Remove="src\Window-Component.jsx" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="public\" />
