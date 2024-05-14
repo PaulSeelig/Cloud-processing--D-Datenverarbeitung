@@ -7,17 +7,20 @@ function setup() {
     document.getElementById("Removebtn").addEventListener("click", RemoveView);
     document.getElementById("SetPointsbtn").addEventListener("click", OpenSetPointsMenu);
 
+    document.querySelector('#objViewCont .objViewWin').addEventListener("click", event => { RenderOnCanvas(event) });
+    AddView();
+
     //AddDropEvent(document.getElementById("objViewCont").firstChild);
     //document.getElementById("objViewCont").firstChild.firstChild.addEventListener("click", RenderOnCanvas)
-    RenderOnCanvas();
+    //RenderOnCanvas();
 }
 //function AddDropEvent(objview) { objview.addEventListener("click", RenderOnCanvas); }
 function AddView() {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
-    if (viewcont.childElementCount < 12) {
-        viewcont.appendChild(viewcont.firstElementChild.cloneNode(true));
+    if (viewcont.childElementCount < 13) {
 
-
+        viewcont.appendChild(document.querySelector('#objViewCont .objViewWin').cloneNode(true));
+        viewcont.lastChild.addEventListener("click", event => { RenderOnCanvas(event) })
         var combBtn = document.getElementById("combine"); // from here the appearance/location of the combine Btn is decided
         if (viewcont.childElementCount == 2) {
             combBtn.classList.remove("hidden");

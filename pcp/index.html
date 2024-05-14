@@ -18,12 +18,15 @@
 <body>
     <div id="objViewCont">
         <div class="objViewWin">
-            <canvas id="c"></canvas>
-            <p class="hint" style="">Drag and Drop a ply file here</p>
-        </div>
-        <div class="objViewWin">
             <canvas></canvas>
-            <p class="hint">Drag and Drop a ply file here</p>
+            <div class="option-menu">
+                <button type="button" class="hideBtn objViewBtn">hide</button>
+                <button type="button" class="lock objViewBtn">lock</button>
+                <button type="button" class="rotateBtn objViewBtn">rotate</button>
+                <button type="button" class="closeBtn objViewBtn">close</button>
+                <button type="button" class="objViewBtn">(hier kommen Icons hin)</button>
+            </div>
+            <p class="hint" style="">Drag and Drop a ply or XYZ file here</p>
         </div>
     </div>
     <button type="button" id="combine" class="special-btn">Combine</button>
@@ -37,10 +40,9 @@
         <button type="button">export</button>
         <button type="button" class="hide">hide bar</button>
     </div>
+
     <div id="root"></div>
 
     <script type="module" src="Script1.js"></script>
-
-    <!--<script type="module" src="./src/Rendering.js"></script>-->
 </body>
 </html>

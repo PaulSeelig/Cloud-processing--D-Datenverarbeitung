@@ -9,6 +9,9 @@
     <BuildOutputFolder>$(MSBuildProjectDirectory)\dist</BuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="src\RenderOnCanvas.js" />
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="public\" />
     <Folder Include="src\assets\" />
   </ItemGroup>
