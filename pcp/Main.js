@@ -3,10 +3,16 @@ import ReactDOM from 'react-dom/client';
 import RenderOnCanvas from "./src/Rendering";
 function setup() {
     document.getElementById("Addbtn").addEventListener("click", AddView);
-    document.getElementById("Removebtn").addEventListener("click", RemoveView);
+    //document.getElementById("Removebtn").addEventListener("click", RemoveView);
     document.getElementById("SetPointsbtn").addEventListener("click", OpenSetPointsMenu);
     document.querySelector('#objViewCont .objViewWin canvas').addEventListener("click", event => { RenderOnCanvas(event) });
+    AssignBtns();
     AddView();
+}
+function AssignBtns()
+{
+    document.querySelector('.objViewWin:last-child .option-menu .closeBtn').addEventListener("click", event => { RemoveView(event) });
+
 }
 function AddView() {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
@@ -24,13 +30,15 @@ function AddView() {
             combBtn.style.bottom = "3%";
             combBtn.style.right = "calc(3% + 18em)";
             combBtn.style.top = "unset";
-        }
+        }  
     }
+    AssignBtns();
 }
-function RemoveView() {
+function RemoveView(event) {
+    
     var viewCont = document.getElementById("objViewCont");
     if (viewCont.childElementCount > 1) {
-        viewCont.removeChild(viewCont.lastChild);
+        viewCont.removeChild(event.target.parentNode.parentNode);
         if (viewCont.childElementCount == 1) {
             document.getElementById("combine").classList.add("hidden");
         }

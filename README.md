@@ -8,6 +8,3 @@ for Windows:
 2. .\vcpkg install crow
 3. .\vcpkg install pcl
 4. profit
-
-for Linux:
-may god help you jk will write when i have the time
