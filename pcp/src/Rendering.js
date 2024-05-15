@@ -9,7 +9,7 @@ import AddScene from './AddScene';
 
 function RenderOnCanvas(event) {
     const canvas = event.target //THREE.createCanvasElement();
-    const renderer = new THREE.WebGLRenderer({ antialias: true, canvas, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, canvas, alpha: false });
     renderer.setClearColor(0x000000, 0);
     canvas.nextElementSibling.classList.add("hidden");
     const sceneInfo = AddScene(canvas.parentNode);
@@ -72,13 +72,13 @@ function RenderOnCanvas(event) {
     });
 
     const { left, right, top, bottom, width, height } = sceneInfo.displayElement.getBoundingClientRect();
-    camera.fov = 100000 / width;
+    camera.fov = 1000;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
 
     function resizeRendererToDisplaySize(renderer) {
         renderer.clear(true, true);
-        const canvas = renderer.domElement;
+        const canvas = renderer.domElement.parentNode;
         const width = canvas.clientWidth;
         const height = canvas.clientHeight;
         const needResize = canvas.width !== width || canvas.height !== height;
