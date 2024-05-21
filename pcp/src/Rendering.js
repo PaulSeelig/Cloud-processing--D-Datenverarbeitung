@@ -3,10 +3,77 @@ import ReactDOM from 'react-dom/client';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PCDLoader } from 'three/addons/loaders/PCDLoader.js';
+import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { randFloat, randInt } from 'three/src/math/MathUtils';
 import AddScene from './AddScene';
 
+function RenderFileOnCanvas(file, canvas)
+{
+    const renderer = new THREE.WebGLRenderer({ antialias: true, canvas, alpha: true });
+    renderer.setClearColor(0x000000, 0);
+    const { scene, camera } = AddScene();
+
+    //const loader = new PLYLoader().parse(file);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+        new PLYLoader().load(e.target.result,
+            function (e) { scene.add(new THREE.Mesh(e, new THREE.MeshPhongMaterial({ color: 0xFFFFFF, emissive: 0xFFFFFF }) ))},
+            function (error) { console.error(error); },
+            function (error) { console.error(error); }); //(m) => {
+            // Check if this is a mesh or a point cloud:
+            //if (m.index) {
+            //    opts.upAxis = '+Y'
+            //    loadMesh(wrapGeometry(m), 'ply')
+            //} else {
+            //    opts.upAxis = '+Z'
+            //    loadPointCloud(m)
+            //}
+        //});
+        
+    };
+    //loader.load(file.result, function (plyfile) {scene.add(plyfile.scene);}, undefined, function (error) { console.error(error);});
+
+    //const { left, right, top, bottom, width, height } = canvas.domElement.parentNode.getBoundingClientRect();
+    camera.fov = 100000;
+    scene.rotateX(10.4);
+    camera.aspect = 0.3;
+    camera.updateProjectionMatrix();
+
+    function resizeRendererToDisplaySize(renderer) {
+        renderer.clear(true, true);
+        const canvas = renderer.domElement.parentNode;
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        const needResize = canvas.width !== width || canvas.height !== height;
+        if (needResize) {
+            renderer.setSize(width, height, false);
+
+        }
+
+        return needResize;
+    }
+
+    function render(time) {
+        time *= 0.001;
+
+        if (resizeRendererToDisplaySize(renderer)) {
+            renderer.clear(true, true);
+            const canvas = renderer.domElement;
+            camera.aspect = canvas.clientWidth / canvas.clientHeight;
+            camera.updateProjectionMatrix();
+        }
+        renderer.render(scene, camera);
+
+        scene.rotation.x = 0.5 * time;
+        requestAnimationFrame(render);
+    }
+
+    requestAnimationFrame(render);
+}
+
+    
 function RenderOnCanvas(event) {
     const canvas = event.target //THREE.createCanvasElement();
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas, alpha: false });
@@ -16,13 +83,6 @@ function RenderOnCanvas(event) {
     const scene = sceneInfo.scene;
     const camera = sceneInfo.camera;
     scene.rotateX(-0.4);
-
-    {
-        const color = 0xFFFFFF;
-        const intensity = 600;
-        const light = new THREE.PointLight(color, intensity);
-        scene.add(light);
-    }
 
 // an array of objects who's rotation to update
     const objects = [];
@@ -76,7 +136,8 @@ function RenderOnCanvas(event) {
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
 
-    function resizeRendererToDisplaySize(renderer) {
+    function resizeRendererToDisplaySize(renderer)
+    {
         renderer.clear(true, true);
         const canvas = renderer.domElement.parentNode;
         const width = canvas.clientWidth;
@@ -88,28 +149,31 @@ function RenderOnCanvas(event) {
         }
 
         return needResize;
-}
-
-function render(time) {
-    time *= 0.001;
-
-    if (resizeRendererToDisplaySize(renderer)) {
-        renderer.clear(true, true);
-        const canvas = renderer.domElement;
-        camera.aspect = canvas.clientWidth / canvas.clientHeight;
-        camera.updateProjectionMatrix();
     }
 
-    dunMesh.rotation.x = 0.5 * time;
-    objects.forEach((obj) => {
-        obj.rotation.z = 0.1*time;
-        // obj.rotation.x = 0.05 * time;
-        time *= 5;
-    });
-    renderer.render(scene, camera);
 
-    requestAnimationFrame(render);
-}
+
+    function render(time)
+    {
+        time *= 0.001;
+
+        if (resizeRendererToDisplaySize(renderer)) {
+            renderer.clear(true, true);
+            const canvas = renderer.domElement;
+            camera.aspect = canvas.clientWidth / canvas.clientHeight;
+            camera.updateProjectionMatrix();
+        }
+
+        dunMesh.rotation.x = 0.5 * time;
+        objects.forEach((obj) => {
+            obj.rotation.z = 0.1*time;
+            // obj.rotation.x = 0.05 * time;
+            time *= 5;
+        });
+        renderer.render(scene, camera);
+
+        requestAnimationFrame(render);
+    }
 
     requestAnimationFrame(render);
 }
@@ -127,4 +191,4 @@ function createPoint(radius, widthsegm, heightsegm, colr, emi, xp, yp, zp)
 }
 
 
-export default RenderOnCanvas;
+export default RenderFileOnCanvas;

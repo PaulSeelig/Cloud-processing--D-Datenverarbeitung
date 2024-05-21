@@ -1,25 +1,25 @@
 import ReactSetPointMenu from "./src/ReactComponent";
 import ReactDOM from 'react-dom/client';
-import RenderOnCanvas from "./src/Rendering";
+import RenderFileOnCanvas from "./src/Rendering";
 function setup() {
     document.getElementById("Addbtn").addEventListener("click", AddView);
     //document.getElementById("Removebtn").addEventListener("click", RemoveView);
     document.getElementById("SetPointsbtn").addEventListener("click", OpenSetPointsMenu);
-    document.querySelector('#objViewCont .objViewWin canvas').addEventListener("click", event => { RenderOnCanvas(event) });
+    //document.querySelector('#objViewCont .objViewWin canvas').addEventListener("click", event => { RenderOnCanvas(event) });
     AssignBtns();
     AddView();
 }
 function AssignBtns()
 {
     document.querySelector('.objViewWin:last-child .option-menu .closeBtn').addEventListener("click", event => { RemoveView(event) });
-    document.querySelector('.objViewWin:last-child .option-menu .import').addEventListener("input", event => { ImportFile(event) });
+    document.querySelector('.objViewWin:last-child .option-menu .import').addEventListener("change", event => { ImportFile(event) });
 }
 function AddView() {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
     if (viewcont.childElementCount < 8) {
 
         viewcont.appendChild(document.querySelector('#objViewCont .objViewWin').cloneNode(true));
-        viewcont.lastChild.addEventListener("click", event => { RenderOnCanvas(event) });
+        //viewcont.lastChild.addEventListener("click", event => { RenderFileOnCanvas(event) });
         AssignBtns();
         document.getElementsByClassName("hint hidden").item(document.getElementsByClassName("hint hidden").length - 1).classList.remove("hidden");
 
@@ -36,7 +36,15 @@ function AddView() {
 }
 function ImportFile(event)
 {
-    console.log(event.value)
+
+    if (event.target.files.length > 0) {
+        const file = event.target.files[0];
+        const canvas = event.target.parentNode.nextElementSibling;
+        canvas.nextElementSibling.classList.add("hidden");
+        document.querySelector('.hint').innerHTML = event.target.files[0].name;
+        file.onload = RenderFileOnCanvas(file, canvas);
+        //event.stopPropagation();
+    }
 }
 function RemoveView(event) {
     
