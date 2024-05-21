@@ -7,11 +7,11 @@
     bottom: 0;
     padding: 20px;
     position: relative;
-    border: .5em groove #cc0000aa;
+    border: .5em groove #000000;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    box-shadow: inset 0 0 25px 10px #cc0000aa;
+    box-shadow: inset 0 0 25px 10px #897c7caa;
 }
 #objViewCont {
     display: flex;
@@ -64,10 +64,37 @@ canvas {
     	padding: inherit;
 
 }
-.option-menu button {
+.option-menu button, input {
     font-size: 1em;
-    color: wheat;
+    color: white;
     font-style: italic;
+    z-index: 4;
+}
+.import::-webkit-file-upload-button {
+    visibility: hidden;
+}
+
+/* Style the custom button */
+.import::before {
+    content: 'import file';
+    display: inline-block;
+    /*background: linear-gradient(top, #f9f9f9, #e3e3e3);*/
+    border: 1px solid #999;
+    border-radius: 3px;
+    padding: 0.1em 8px;
+    outline: none;
+    /*white-space: nowrap;*/
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.8em;
+}
+.import:hover::before {
+    border-color: black;
+}
+
+/* Active state */
+.import:active::before {
+    background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
 }
 body button.special-btn{
     position: absolute;
@@ -124,9 +151,9 @@ visibility: hidden;
 }
 .objViewWin .option-menu {
     min-height: 10px;
-    height: 1.5em;
+    height: 1.3em;
     background: linear-gradient(5deg, rgb(102 254 389 / 41%), #1f816844, #77000020);
-    font-size: 1.2em !important;
+    font-size: 1em !important;
 }
 button:nth-child(even) {
     background: #fff0;

@@ -12,7 +12,7 @@ function setup() {
 function AssignBtns()
 {
     document.querySelector('.objViewWin:last-child .option-menu .closeBtn').addEventListener("click", event => { RemoveView(event) });
-
+    document.querySelector('.objViewWin:last-child .option-menu .import').addEventListener("input", event => { ImportFile(event) });
 }
 function AddView() {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
@@ -20,6 +20,7 @@ function AddView() {
 
         viewcont.appendChild(document.querySelector('#objViewCont .objViewWin').cloneNode(true));
         viewcont.lastChild.addEventListener("click", event => { RenderOnCanvas(event) });
+        AssignBtns();
         document.getElementsByClassName("hint hidden").item(document.getElementsByClassName("hint hidden").length - 1).classList.remove("hidden");
 
         var combBtn = document.getElementById("combine"); // from here the appearance/location of the combine Btn is decided
@@ -31,8 +32,11 @@ function AddView() {
             combBtn.style.right = "calc(3% + 18em)";
             combBtn.style.top = "unset";
         }  
-    }
-    AssignBtns();
+    }    
+}
+function ImportFile(event)
+{
+    console.log(event.value)
 }
 function RemoveView(event) {
     

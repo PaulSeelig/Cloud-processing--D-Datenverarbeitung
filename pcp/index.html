@@ -17,15 +17,17 @@
 </head>
 <body>
     <div id="objViewCont">
-        <div class="objViewWin">
+        <div class="objViewWin"><!-- this div (and children) should stay free of any IDs, as it gets cloned at some point and the same ID should always exist just once -->
             <div class="option-menu">
                 <button type="button" class="hideBtn objViewBtn">hide</button>
                 <button type="button" class="rotateBtn objViewBtn">stop rotating</button>
                 <button type="button" class="closeBtn objViewBtn">close</button>
-                <button type="button" class="objViewBtn">(hier kommen Icons hin)</button>
+                <input type="color" name="colors" />
+                <input type="file" name="chooseFile" class="import" accept=".ply, .xyz, .STL" />
+
             </div>
             <canvas></canvas>
-            <p class="hint" style="">Drag and Drop a ply or XYZ file here</p>
+            <p class="hint">Drag and Drop a ply or XYZ file here</p>
         </div>
     </div>
     <button type="button" id="combine" class="special-btn">Combine</button>
@@ -35,7 +37,6 @@
         <button type="button" id="SetPointsbtn">Set points</button>
         <button type="button">set color-design</button>
         <button type="button">save</button>
-        <button type="button">import</button>
         <button type="button">export</button>
         <button type="button" class="hide">hide bar</button>
     </div>
