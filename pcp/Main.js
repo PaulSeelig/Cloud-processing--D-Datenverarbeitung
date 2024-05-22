@@ -41,7 +41,7 @@ function ImportFile(event)
         const file = event.target.files[0];
         const canvas = event.target.parentNode.nextElementSibling;
         canvas.nextElementSibling.classList.add("hidden");
-        document.querySelector('.hint').innerHTML = event.target.files[0].name;
+        //document.querySelector('.hint').innerHTML = event.target.files[0].name;
         file.onload = RenderFileOnCanvas(file, canvas);
         //event.stopPropagation();
     }
