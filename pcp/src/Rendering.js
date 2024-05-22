@@ -14,20 +14,22 @@ function RenderFileOnCanvas(file, canvas)
     const { scene, camera} = AddScene();
     let D3_Mesh;
     const reader = new FileReader();
+    const pointsize = canvas.parentNode.querySelector('.pointsize');
     reader.readAsDataURL(file);
     reader.onload = (e) =>
     {
         new PLYLoader().load(e.target.result,
             function (e)
             {
-                D3_Mesh = new THREE.Points(e.center(), new THREE.PointsMaterial({ color: 0xFFFFFF}))
+                D3_Mesh = new THREE.Points(e.center(), new THREE.PointsMaterial({ color: 0xFFFFFF, size: pointsize.value / 100 }));
+
+                pointsize.addEventListener("change", function () { D3_Mesh.material = new THREE.PointsMaterial({ color: 0xffffff, size: pointsize.value / 100 }) });
                 scene.add(D3_Mesh);
             },
-            function (error) { console.error(error); },
+            undefined,
             function (error) { console.error(error); }
         );        
     };
-
     function resizeRendererToDisplaySize(renderer) {
         renderer.clear(true, true);
         const canvas = renderer.domElement.parentNode;

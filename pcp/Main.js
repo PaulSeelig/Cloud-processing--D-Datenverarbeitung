@@ -12,7 +12,9 @@ function setup() {
 function AssignBtns()
 {
     document.querySelector('.objViewWin:last-child .option-menu .closeBtn').addEventListener("click", event => { RemoveView(event) });
-    document.querySelector('.objViewWin:last-child .option-menu .import').addEventListener("change", event => { ImportFile(event) });
+    document.querySelector('.objViewWin:last-child .option-menu .import').addEventListener("change", event => { ImportFile(event.target) });
+    //document.querySelector('.objViewWin:last-child .option-menu .pointsize').addEventListener("change", event => { ImportFile(event.target.parentNode.querySelector('.import')) });
+    
 }
 function AddView() {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
@@ -34,12 +36,11 @@ function AddView() {
         }  
     }    
 }
-function ImportFile(event)
+function ImportFile(eventtarget)
 {
-
-    if (event.target.files.length > 0) {
-        const file = event.target.files[0];
-        const canvas = event.target.parentNode.nextElementSibling;
+    if (eventtarget.files.length > 0) {
+        const file = eventtarget.files[0];
+        const canvas = eventtarget.parentNode.nextElementSibling;
         canvas.nextElementSibling.classList.add("hidden");
         //document.querySelector('.hint').innerHTML = event.target.files[0].name;
         file.onload = RenderFileOnCanvas(file, canvas);

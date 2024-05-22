@@ -10,7 +10,7 @@ function AddScene()
         light.position.set(100, -100, 200);
         scene.add(light);
         //scene.rotation.y = Math.PI;
-        scene.fog = new THREE.Fog(0x555555, 50, 200);
+        scene.fog = new THREE.Fog(0x441111, 60, 200);
     }
     return { scene, camera};
 }
