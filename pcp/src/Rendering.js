@@ -15,15 +15,18 @@ function RenderFileOnCanvas(file, canvas)
     let D3_Mesh;
     const reader = new FileReader();
     const pointsize = canvas.parentNode.querySelector('.pointsize');
+    const pointclr = canvas.parentNode.querySelector('[name="colors"]');
+    const rotate = canvas.parentNode.querySelector('[name="rotate"]');
     reader.readAsDataURL(file);
     reader.onload = (e) =>
     {
         new PLYLoader().load(e.target.result,
             function (e)
             {
-                D3_Mesh = new THREE.Points(e.center(), new THREE.PointsMaterial({ color: 0xFFFFFF, size: pointsize.value / 100 }));
+                D3_Mesh = new THREE.Points(e.center(), new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 1000 }));
+                pointsize.addEventListener("change", function () { D3_Mesh.material = new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 1000 }) });
+                pointclr.addEventListener("change", function () { D3_Mesh.material = new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 1000 }) });
 
-                pointsize.addEventListener("change", function () { D3_Mesh.material = new THREE.PointsMaterial({ color: 0xffffff, size: pointsize.value / 100 }) });
                 scene.add(D3_Mesh);
             },
             undefined,
@@ -51,7 +54,10 @@ function RenderFileOnCanvas(file, canvas)
             camera.updateProjectionMatrix();
         }
         renderer.render(scene, camera);
-        scene.rotation.z = 0.4 * time;
+
+        if (rotate.checked) {
+            scene.rotation.z = 0.4 * time;
+        }
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
