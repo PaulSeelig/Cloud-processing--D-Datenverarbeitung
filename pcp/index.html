@@ -19,12 +19,13 @@
     <div id="objViewCont">
         <div class="objViewWin"><!-- this div (and children) should stay free of any IDs, as it gets cloned at some point and the same ID should always exist just once -->
             <div class="option-menu">
-                <button type="button" class="hideBtn objViewBtn">hide</button>
-                <input type="checkbox" name="rotate" class="rotateBtn objViewBtn"/>
-                <button type="button" class="closeBtn objViewBtn">close</button>
+                <button type="button" class="closeBtn objViewBtn">&#x2715;</button>
+                <!--<button type="button" class="hideBtn objViewBtn">hide</button>-->
+                <label for="rotate">rotate</label>
+                <input type="checkbox" name="rotate" class="rotateBtn objViewBtn" />
                 <input type="color" name="colors" value="#bbbbbb" />
                 <input type="file" name="chooseFile" class="import" accept=".ply, .xyz, .STL" />
-                <input type="range" name="pointsize" class="pointsize" min="1" max="2000" value="1" />
+                <input type="range" name="pointsize" class="pointsize" min="1" max="1000000" value="1" />
             </div>
             <canvas></canvas>
             <p class="hint">Drag and Drop a ply or XYZ file here</p>

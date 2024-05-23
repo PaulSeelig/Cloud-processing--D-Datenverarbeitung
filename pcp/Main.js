@@ -22,7 +22,9 @@ function AddView() {
 
         viewcont.appendChild(document.querySelector('#objViewCont .objViewWin').cloneNode(true));
         //viewcont.lastChild.addEventListener("click", event => { RenderFileOnCanvas(event) });
+        //viewcont.lastChild.querySelector('[name="choosefile"]').files[0] = null; 
         AssignBtns();
+
         document.getElementsByClassName("hint hidden").item(document.getElementsByClassName("hint hidden").length - 1).classList.remove("hidden");
 
         var combBtn = document.getElementById("combine"); // from here the appearance/location of the combine Btn is decided
@@ -41,10 +43,8 @@ function ImportFile(eventtarget)
     if (eventtarget.files.length > 0) {
         const file = eventtarget.files[0];
         const canvas = eventtarget.parentNode.nextElementSibling;
-        canvas.nextElementSibling.classList.add("hidden");
-        //document.querySelector('.hint').innerHTML = event.target.files[0].name;
+        canvas.nextElementSibling.classList.add("hidden"); 
         file.onload = RenderFileOnCanvas(file, canvas);
-        //event.stopPropagation();
     }
 }
 function RemoveView(event) {

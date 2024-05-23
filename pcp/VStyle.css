@@ -40,6 +40,9 @@ canvas {
     height: 100%;
     cursor: pointer
 }
+input.pointsize {
+    width: inherit;
+}
 .menu {
     position: absolute;
     top: 4%;
@@ -64,11 +67,17 @@ canvas {
     	padding: inherit;
 
 }
-.option-menu button, input {
-    font-size: 1em;
+.option-menu button, input, label {
     color: white;
     font-style: italic;
     z-index: 4;
+    margin: 0 .5em;
+}
+button.closeBtn.objViewBtn {
+    background: #FFF;
+    color: #000;
+    display: flex;
+    margin: 0;
 }
 .import::-webkit-file-upload-button {
     visibility: hidden;

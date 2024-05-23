@@ -23,9 +23,9 @@ function RenderFileOnCanvas(file, canvas)
         new PLYLoader().load(e.target.result,
             function (e)
             {
-                D3_Mesh = new THREE.Points(e.center(), new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 1000 }));
-                pointsize.addEventListener("change", function () { D3_Mesh.material = new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 1000 }) });
-                pointclr.addEventListener("change", function () { D3_Mesh.material = new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 1000 }) });
+                D3_Mesh = new THREE.Points(e.center(), CreatePointsMaterial());
+                pointsize.addEventListener("input", function () { D3_Mesh.material = CreatePointsMaterial() });
+                pointclr.addEventListener("input", function () { D3_Mesh.material = CreatePointsMaterial() });
 
                 scene.add(D3_Mesh);
             },
@@ -33,6 +33,7 @@ function RenderFileOnCanvas(file, canvas)
             function (error) { console.error(error); }
         );        
     };
+    function CreatePointsMaterial() { return new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 500000 }) }
     function resizeRendererToDisplaySize(renderer) {
         renderer.clear(true, true);
         const canvas = renderer.domElement.parentNode;
@@ -45,9 +46,8 @@ function RenderFileOnCanvas(file, canvas)
         return needResize;
     }
     function render(time) {
-        time *= 0.001;
-
-        if (resizeRendererToDisplaySize(renderer)) {
+        if (resizeRendererToDisplaySize(renderer))
+        {
             renderer.clear(true, true);
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -55,9 +55,7 @@ function RenderFileOnCanvas(file, canvas)
         }
         renderer.render(scene, camera);
 
-        if (rotate.checked) {
-            scene.rotation.z = 0.4 * time;
-        }
+        if (rotate.checked) {scene.rotation.z = 0.00025 * time;}
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
