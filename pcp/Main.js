@@ -5,6 +5,7 @@ function setup() {
     document.getElementById("Addbtn").addEventListener("click", AddView);
     //document.getElementById("Removebtn").addEventListener("click", RemoveView);
     document.getElementById("SetPointsbtn").addEventListener("click", OpenSetPointsMenu);
+    document.getElementById("combine").addEventListener("click", GetCombinedFile);
     //document.querySelector('#objViewCont .objViewWin canvas').addEventListener("click", event => { RenderOnCanvas(event) });
     AssignBtns();
     AddView();
@@ -63,5 +64,23 @@ function OpenSetPointsMenu() {
     roo.childElementCount > 0 ? roo.childNodes.forEach(roo.removeChild(roo.firstChild)) : ReactDOM.createRoot(roo).render(ReactSetPointMenu());
 }
 
-
+function GetCombinedFile() /*Script written by ChatGBT for testing purposes*/
+{
+    document.getElementById('combine').addEventListener('click', () => {
+        fetch('http://localhost:18080/filenames')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+            });
+    });
+}
+        
 window.addEventListener("load", setup);

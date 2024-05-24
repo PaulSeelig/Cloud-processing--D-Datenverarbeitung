@@ -15,12 +15,7 @@ int main()
     // Example Crow server setup
     crow::SimpleApp app;
 
-    CROW_ROUTE(app, "/fetchrequest")
-        ([] {
-        return crow::mustache::load("Fetchrequest.htm").render();
-        });
-
-    CROW_ROUTE(app, "/api/response")
+    CROW_ROUTE(app, "/filenames")
         ([]() {
         // Process the request and return JSON data
         std::string resp = "Do be working?";
