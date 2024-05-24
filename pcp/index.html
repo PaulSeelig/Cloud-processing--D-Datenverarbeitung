@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -17,7 +16,8 @@
 </head>
 <body>
     <div id="objViewCont">
-        <div class="objViewWin"><!-- this div (and children) should stay free of any IDs, as it gets cloned at some point and the same ID should always exist just once -->
+        <div class="objViewWin">
+            <!-- this div (and children) should stay free of any IDs, as it gets cloned at some point and the same ID should always exist just once -->
             <div class="option-menu">
                 <button type="button" class="closeBtn objViewBtn">&#x2715;</button>
                 <!--<button type="button" class="hideBtn objViewBtn">hide</button>-->
@@ -30,6 +30,11 @@
             <canvas></canvas>
             <p class="hint">Drag and Drop a ply or XYZ file here</p>
         </div>
+
+    </div>
+    <div class="objViewWin minimized" id="Dialog">
+        <button type="button" id="showOrHideDialog">Dialog</button>
+        <p></p>
     </div>
     <button type="button" id="combine" class="special-btn">Combine</button>
     <button type="button" id="Addbtn" class="special-btn" style="right: 3%; bottom: 3%; top: unset">Add viewport</button>

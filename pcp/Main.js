@@ -1,13 +1,27 @@
 import ReactSetPointMenu from "./src/ReactComponent";
 import ReactDOM from 'react-dom/client';
 import RenderFileOnCanvas from "./src/Rendering";
+
+var DialogLine = 1;
 function setup() {
     document.getElementById("Addbtn").addEventListener("click", AddView);
     //document.getElementById("Removebtn").addEventListener("click", RemoveView);
     document.getElementById("SetPointsbtn").addEventListener("click", OpenSetPointsMenu);
+
+    document.getElementById("showOrHideDialog").addEventListener("click", function () {
+        if (document.querySelectorAll('#Dialog.minimized').length > 0) {
+            document.querySelector('#Dialog').classList.remove('minimized');
+        }
+        else {
+           document.querySelector('#Dialog').classList.add('minimized');
+        }
+    });
     //document.querySelector('#objViewCont .objViewWin canvas').addEventListener("click", event => { RenderOnCanvas(event) });
     AssignBtns();
     AddView();
+    AddToDialog("Good morning folks... ");
+
+    AddToDialog("I don't care for the actual time... Have Fun");
 }
 function AssignBtns()
 {
@@ -24,8 +38,9 @@ function AddView() {
         //viewcont.lastChild.addEventListener("click", event => { RenderFileOnCanvas(event) });
         //viewcont.lastChild.querySelector('[name="choosefile"]').files[0] = null; 
         AssignBtns();
-
-        document.getElementsByClassName("hint hidden").item(document.getElementsByClassName("hint hidden").length - 1).classList.remove("hidden");
+        if (document.querySelector('.objViewWin:last-child .hint.hidden')) {
+            document.getElementsByClassName("hint hidden").item(document.getElementsByClassName("hint hidden").length - 1).classList.remove("hidden");
+        }
 
         var combBtn = document.getElementById("combine"); // from here the appearance/location of the combine Btn is decided
         if (viewcont.childElementCount == 2) {
@@ -46,6 +61,11 @@ function ImportFile(eventtarget)
         canvas.nextElementSibling.classList.add("hidden"); 
         file.onload = RenderFileOnCanvas(file, canvas);
     }
+}
+function AddToDialog(diamessage)
+{
+    document.querySelector('#Dialog p').innerHTML += "<br>" + DialogLine + ": " + diamessage;
+    DialogLine++;
 }
 function RemoveView(event) {
     

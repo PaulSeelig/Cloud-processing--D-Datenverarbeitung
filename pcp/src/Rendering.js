@@ -34,7 +34,8 @@ function RenderFileOnCanvas(file, canvas)
         );        
     };
     function CreatePointsMaterial() { return new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 500000 }) }
-    function resizeRendererToDisplaySize(renderer) {
+    function resizeRendererToDisplaySize(renderer)
+    {
         renderer.clear(true, true);
         const canvas = renderer.domElement.parentNode;
         const width = canvas.clientWidth;
@@ -45,7 +46,8 @@ function RenderFileOnCanvas(file, canvas)
         }
         return needResize;
     }
-    function render(time) {
+    function render(time)
+    {
         if (resizeRendererToDisplaySize(renderer))
         {
             renderer.clear(true, true);
