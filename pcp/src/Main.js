@@ -1,19 +1,64 @@
 import ReactSetPointMenu from "./components/ReactComponent";
 import ReactDOM from 'react-dom/client';
+<<<<<<< HEAD:pcp/src/Main.js
 import RenderOnCanvas from "./components/Rendering";
 import * as THREE from 'three';
 import Scan3DService from "./services/3DScanService";
 import setupMockApi from "./services/mockupApi"
 const scanService = new Scan3DService();
 
+=======
+import RenderFileOnCanvas from "./src/Rendering";
+
+var DialogLine = 1;
+>>>>>>> 9de18108c4f3e7549188860e9facc704af78a7fa:pcp/Main.js
 function setup() {
     document.getElementById("Addbtn").addEventListener("click", AddView);
-    document.getElementById("Removebtn").addEventListener("click", RemoveView);
+    //document.getElementById("Removebtn").addEventListener("click", RemoveView);
     document.getElementById("SetPointsbtn").addEventListener("click", OpenSetPointsMenu);
+<<<<<<< HEAD:pcp/src/Main.js
     document.querySelector('#objViewCont .objViewWin canvas').addEventListener("click", event => { RenderOnCanvas(event) });
     document.getElementById('uploadScan').addEventListener('change', handleFile, false);
 
+=======
+
+    document.getElementById("showOrHideDialog").addEventListener("click", function () {
+        if (document.querySelectorAll('#Dialog.minimized').length > 0) {
+            document.querySelector('#Dialog').classList.remove('minimized');
+        }
+        else {
+           document.querySelector('#Dialog').classList.add('minimized');
+        }
+    });
+    //document.querySelector('#objViewCont .objViewWin canvas').addEventListener("click", event => { RenderOnCanvas(event) });
+    AssignBtns();
+>>>>>>> 9de18108c4f3e7549188860e9facc704af78a7fa:pcp/Main.js
     AddView();
+    AddToDialog("Good morning folks... ");
+    AddToDialog("I don't care for the actual time... Have Fun");
+
+    // Create a new instance of MutationObserver, passing it a callback function // same as adventlistener, but can handle the change of innerHTML
+    const observer = new MutationObserver(function () {
+        if (document.querySelectorAll('#Dialog.minimized').length > 0) {
+            document.querySelector('#Dialog').classList.remove('minimized');
+        }
+    });
+    // Call 'observe' on the MutationObserver instance, specifying the element to observe
+    observer.observe(document.querySelector('#Dialog p'), { childList: true });
+
+}
+function Highlight(element)
+{
+    element.classList.add("Highlight");
+    element.classList.remove("Highlight");
+}
+function AssignBtns()
+{
+    document.querySelector('.objViewWin:last-child .option-menu .closeBtn').addEventListener("click", event => { RemoveView(event) });
+    document.querySelector('.objViewWin:last-child .option-menu .import').addEventListener("change", event => { ImportFile(event.target) });
+    AddToDialog("Advents were just assigned, to two new buttons!)")
+    //document.querySelector('.objViewWin:last-child .option-menu .pointsize').addEventListener("change", event => { ImportFile(event.target.parentNode.querySelector('.import')) });
+    
 }
 
 function AddView() {
@@ -21,8 +66,12 @@ function AddView() {
     if (viewcont.childElementCount < 8) {
 
         viewcont.appendChild(document.querySelector('#objViewCont .objViewWin').cloneNode(true));
-        viewcont.lastChild.addEventListener("click", event => { RenderOnCanvas(event) });
-        document.getElementsByClassName("hint hidden").item(document.getElementsByClassName("hint hidden").length - 1).classList.remove("hidden");
+        //viewcont.lastChild.addEventListener("click", event => { RenderFileOnCanvas(event) });
+        //viewcont.lastChild.querySelector('[name="choosefile"]').files[0] = null; 
+        AssignBtns();
+        if (document.querySelector('.objViewWin:last-child .hint.hidden')) {
+            document.getElementsByClassName("hint hidden").item(document.getElementsByClassName("hint hidden").length - 1).classList.remove("hidden");
+        }
 
         var combBtn = document.getElementById("combine"); // from here the appearance/location of the combine Btn is decided
         if (viewcont.childElementCount == 2) {
@@ -32,14 +81,33 @@ function AddView() {
             combBtn.style.bottom = "3%";
             combBtn.style.right = "calc(3% + 18em)";
             combBtn.style.top = "unset";
-        }
+        }  
+    }    
+}
+function ImportFile(eventtarget)
+{
+    if (eventtarget.files.length > 0) {
+        const file = eventtarget.files[0];
+        const canvas = eventtarget.parentNode.nextElementSibling;
+        canvas.nextElementSibling.classList.add("hidden"); 
+        file.onload = RenderFileOnCanvas(file, canvas);
     }
 }
+<<<<<<< HEAD:pcp/src/Main.js
 
 function RemoveView() {
+=======
+function AddToDialog(diamessage)
+{
+    document.querySelector('#Dialog p').innerHTML += "<br>" + DialogLine + ": " + diamessage;
+    DialogLine++;
+}
+function RemoveView(event) {
+    
+>>>>>>> 9de18108c4f3e7549188860e9facc704af78a7fa:pcp/Main.js
     var viewCont = document.getElementById("objViewCont");
     if (viewCont.childElementCount > 1) {
-        viewCont.removeChild(viewCont.lastChild);
+        viewCont.removeChild(event.target.parentNode.parentNode);
         if (viewCont.childElementCount == 1) {
             document.getElementById("combine").classList.add("hidden");
         }

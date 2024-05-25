@@ -7,11 +7,12 @@
     bottom: 0;
     padding: 20px;
     position: relative;
-    border: .5em groove #cc0000aa;
+    border: .5em groove #000000;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    box-shadow: inset 0 0 25px 10px #cc0000aa;
+    box-shadow: inset 0 0 25px 10px #897c7caa;
+    
 }
 #objViewCont {
     display: flex;
@@ -34,11 +35,14 @@ body {
 canvas {
     position: absolute;
     top: 0;
-    z-index: 2;
+    z-index: 1;
     right: 0;
     width: 100%;
     height: 100%;
     cursor: pointer
+}
+input.pointsize {
+    width: inherit;
 }
 .menu {
     position: absolute;
@@ -53,7 +57,7 @@ canvas {
  	margin: auto; 
 	height: 30%; 
 	width: 30%;  
-	z-index: 5; 	
+	z-index: 1; 	
 	border-radius: 5%; 
 	align-items: center;
 	text-align: center;
@@ -64,10 +68,74 @@ canvas {
     	padding: inherit;
 
 }
-.option-menu button {
-    font-size: 1em;
-    color: wheat;
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0ac8f66b;
+    box-shadow: 2px 2px 6px #555;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: url(https://cdn.wallpapersafari.com/9/12/7F9LvO.jpg);
+    background-attachment: fixed;
+    background-size: calc(100vw + 10px);
+    background-repeat: no-repeat;
+}
+#Dialog {
+    /*width: 100%;*/
+    max-height: 40%;
+    position: absolute;
+    bottom: 0;
+    /* bottom: calc(-40% - 2.5em); */
+    background: #110;
+    z-index: 5;
+    color: darkgrey;
+    overflow: auto;
+    padding-left: 6em;
+    border-color: #ccf;
+    transition: 1s ease-in-out all;
+}
+.option-menu button, input, label {
+    color: white;
     font-style: italic;
+    z-index: 4;
+    margin: 0 .5em;
+}
+button.closeBtn.objViewBtn {
+    background: #FFF;
+    color: #000;
+    display: flex;
+    margin: 0;
+}
+.import::-webkit-file-upload-button {
+    visibility: hidden;
+}
+
+/* Style the custom button */
+.import::before {
+    content: 'import file';
+    display: inline-block;
+    /*background: linear-gradient(top, #f9f9f9, #e3e3e3);*/
+    border: 1px solid #999;
+    border-radius: 3px;
+    padding: 0.1em 8px;
+    outline: none;
+    /*white-space: nowrap;*/
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.8em;
+}
+.import:hover::before {
+    border-color: black;
+}
+
+/* Active state */
+.import:active::before {
+    background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
 }
 body button.special-btn{
     position: absolute;
@@ -89,6 +157,20 @@ body button.special-btn{
 }
 .hidden{
 visibility: hidden;
+}
+#Dialog.minimized {
+    bottom: calc(-40% - 2.5em) !important;
+}
+button#showOrHideDialog {
+    left: 1.5em;
+    height: auto;
+    background: #000;
+    bottom: 3em;
+    color: white;
+    position: fixed;
+    padding: .5em;
+    border-radius: 20%;
+    border: 1px solid;
 }
 .hide{
     right:    0;
@@ -124,9 +206,9 @@ visibility: hidden;
 }
 .objViewWin .option-menu {
     min-height: 10px;
-    height: 1.5em;
+    height: 1.3em;
     background: linear-gradient(5deg, rgb(102 254 389 / 41%), #1f816844, #77000020);
-    font-size: 1.2em !important;
+    font-size: 1em !important;
 }
 button:nth-child(even) {
     background: #fff0;
@@ -140,4 +222,5 @@ button
     width: fit-content;
     height: 100%;
     border: none;
+    z-index: 3;
 }

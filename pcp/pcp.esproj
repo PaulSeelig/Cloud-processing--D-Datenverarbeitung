@@ -9,6 +9,7 @@
     <BuildOutputFolder>$(MSBuildProjectDirectory)\dist</BuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="src\ReactComponent1.jsx" />
     <None Remove="src\RenderOnCanvas.js" />
     <None Remove="src\Window-Component.jsx" />
   </ItemGroup>

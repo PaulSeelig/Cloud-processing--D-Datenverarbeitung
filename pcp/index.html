@@ -19,31 +19,47 @@
 <body>
     <div id="objViewCont">
         <div class="objViewWin">
+            <!-- this div (and children) should stay free of any IDs, as it gets cloned at some point and the same ID should always exist just once -->
             <div class="option-menu">
-                <button type="button" class="hideBtn objViewBtn">hide</button>
-                <button type="button" class="lock objViewBtn">lock</button>
-                <button type="button" class="rotateBtn objViewBtn">rotate</button>
-                <button type="button" class="closeBtn objViewBtn">close</button>
-                <button type="button" class="objViewBtn">(hier kommen Icons hin)</button>
+                <button type="button" class="closeBtn objViewBtn">&#x2715;</button>
+                <!--<button type="button" class="hideBtn objViewBtn">hide</button>-->
+                <label for="rotate">rotate</label>
+                <input type="checkbox" name="rotate" class="rotateBtn objViewBtn" />
+                <input type="color" name="colors" value="#bbbbbb" />
+                <input type="file" name="chooseFile" class="import" accept=".ply, .xyz, .STL" />
+                <input type="range" name="pointsize" class="pointsize" min="1" max="1000000" value="1" />
             </div>
             <canvas></canvas>
+<<<<<<< HEAD
             <p class="hint" style="">
                 <input type="file" id="uploadScan">
                 Drag and Drop a ply or XYZ file here
             </p>
+=======
+            <p class="hint">Drag and Drop a ply or XYZ file here</p>
+>>>>>>> 9de18108c4f3e7549188860e9facc704af78a7fa
         </div>
+
+    </div>
+    <div class="objViewWin minimized" id="Dialog">
+        <button type="button" id="showOrHideDialog">Dialog</button>
+        <p></p>
     </div>
 
     <button type="button" id="combine" class="special-btn">Combine</button>
+<<<<<<< HEAD
     <button type="button" id="Addbtn" class="special-btn" style="right: 3%; bottom: 3%; top: unset">Add
         viewport</button>
     <button type="button" id="Removebtn" class="special-btn"
         style="right: calc(3% + 9em); bottom: 3%; top: unset">Remove viewport</button>
+=======
+    <button type="button" id="Addbtn" class="special-btn" style="right: 3%; bottom: 3%; top: unset">Add viewport</button>
+    <!--<button type="button" id="Removebtn" class="special-btn" style="right: calc(3% + 9em); bottom: 3%; top: unset">Remove viewport</button>-->
+>>>>>>> 9de18108c4f3e7549188860e9facc704af78a7fa
     <div class="option-menu">
         <button type="button" id="SetPointsbtn">Set points</button>
         <button type="button">set color-design</button>
         <button type="button">save</button>
-        <button type="button">import</button>
         <button type="button">export</button>
         <button type="button" class="hide">hide bar</button>
     </div>
