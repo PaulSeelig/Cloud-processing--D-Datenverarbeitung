@@ -1,6 +1,6 @@
-
 <!doctype html>
 <html lang="en">
+
 <head>
     <script type="importmap">
         {
@@ -15,6 +15,7 @@
     <link rel="stylesheet" type="text/css" href="VStyle.css">
     <title>Point-Cloud-Processing</title>
 </head>
+
 <body>
     <div id="objViewCont">
         <div class="objViewWin">
@@ -26,12 +27,18 @@
                 <button type="button" class="objViewBtn">(hier kommen Icons hin)</button>
             </div>
             <canvas></canvas>
-            <p class="hint" style="">Drag and Drop a ply or XYZ file here</p>
+            <p class="hint" style="">
+                <input type="file" id="uploadScan">
+                Drag and Drop a ply or XYZ file here
+            </p>
         </div>
     </div>
+
     <button type="button" id="combine" class="special-btn">Combine</button>
-    <button type="button" id="Addbtn" class="special-btn" style="right: 3%; bottom: 3%; top: unset">Add viewport</button>
-    <button type="button" id="Removebtn" class="special-btn" style="right: calc(3% + 9em); bottom: 3%; top: unset">Remove viewport</button>
+    <button type="button" id="Addbtn" class="special-btn" style="right: 3%; bottom: 3%; top: unset">Add
+        viewport</button>
+    <button type="button" id="Removebtn" class="special-btn"
+        style="right: calc(3% + 9em); bottom: 3%; top: unset">Remove viewport</button>
     <div class="option-menu">
         <button type="button" id="SetPointsbtn">Set points</button>
         <button type="button">set color-design</button>
@@ -43,6 +50,7 @@
 
     <div id="root"></div>
 
-    <script type="module" src="Main.js"></script>
+    <script type="module" src="./src/Main.js"></script>
 </body>
+
 </html>
