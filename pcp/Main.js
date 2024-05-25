@@ -20,13 +20,28 @@ function setup() {
     AssignBtns();
     AddView();
     AddToDialog("Good morning folks... ");
-
     AddToDialog("I don't care for the actual time... Have Fun");
+
+    // Create a new instance of MutationObserver, passing it a callback function // same as adventlistener, but can handle the change of innerHTML
+    const observer = new MutationObserver(function () {
+        if (document.querySelectorAll('#Dialog.minimized').length > 0) {
+            document.querySelector('#Dialog').classList.remove('minimized');
+        }
+    });
+    // Call 'observe' on the MutationObserver instance, specifying the element to observe
+    observer.observe(document.querySelector('#Dialog p'), { childList: true });
+
+}
+function Highlight(element)
+{
+    element.classList.add("Highlight");
+    element.classList.remove("Highlight");
 }
 function AssignBtns()
 {
     document.querySelector('.objViewWin:last-child .option-menu .closeBtn').addEventListener("click", event => { RemoveView(event) });
     document.querySelector('.objViewWin:last-child .option-menu .import').addEventListener("change", event => { ImportFile(event.target) });
+    AddToDialog("Advents were just assigned, to two new buttons!)")
     //document.querySelector('.objViewWin:last-child .option-menu .pointsize').addEventListener("change", event => { ImportFile(event.target.parentNode.querySelector('.import')) });
     
 }

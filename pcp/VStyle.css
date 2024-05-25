@@ -95,7 +95,7 @@ input.pointsize {
     z-index: 5;
     color: darkgrey;
     overflow: auto;
-    /* padding: 1em .5em; */
+    padding-left: 6em;
     border-color: #ccf;
     transition: 1s ease-in-out all;
 }
@@ -162,12 +162,15 @@ visibility: hidden;
     bottom: calc(-40% - 2.5em) !important;
 }
 button#showOrHideDialog {
-    left: 1em;
-    height: 1em;
+    left: 1.5em;
+    height: auto;
     background: #000;
-    bottom: 1em;
+    bottom: 3em;
     color: white;
     position: fixed;
+    padding: .5em;
+    border-radius: 20%;
+    border: 1px solid;
 }
 .hide{
     right:    0;
