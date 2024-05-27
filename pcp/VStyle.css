@@ -12,7 +12,10 @@
     justify-content: center;
     align-items: center;
     box-shadow: inset 0 0 25px 10px #897c7caa;
-    
+}
+.not_accessible {
+    filter: contrast(0.4) blur(.7px);
+    cursor: not-allowed;
 }
 #objViewCont {
     display: flex;
@@ -86,22 +89,23 @@ input.pointsize {
     background-repeat: no-repeat;
 }
 #Dialog {
-    /*width: 100%;*/
     max-height: 40%;
     position: absolute;
     bottom: 0;
-    /* bottom: calc(-40% - 2.5em); */
+    left: 0;
     background: #110;
     z-index: 5;
     color: darkgrey;
     overflow: auto;
     padding-left: 6em;
     border-color: #ccf;
-    transition: 1s ease-in-out all;
+    transition: .8s ease-in-out all;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-start;
 }
 .option-menu button, input, label {
     color: white;
-    font-style: italic;
     z-index: 4;
     margin: 0 .5em;
 }
@@ -110,6 +114,9 @@ button.closeBtn.objViewBtn {
     color: #000;
     display: flex;
     margin: 0;
+    padding: .1em .2em;
+    font-size: 1.1em;
+    align-items: center;
 }
 .import::-webkit-file-upload-button {
     visibility: hidden;
@@ -124,7 +131,6 @@ button.closeBtn.objViewBtn {
     border-radius: 3px;
     padding: 0.1em 8px;
     outline: none;
-    /*white-space: nowrap;*/
     cursor: pointer;
     font-weight: 700;
     font-size: 0.8em;
@@ -159,7 +165,8 @@ body button.special-btn{
 visibility: hidden;
 }
 #Dialog.minimized {
-    bottom: calc(-40% - 2.5em) !important;
+    bottom: -50%;
+    left: -10%;
 }
 button#showOrHideDialog {
     left: 1.5em;
