@@ -1,6 +1,5 @@
-import ReactSetPointMenu from "./src/ReactComponent";
 import ReactDOM from 'react-dom/client';
-import RenderFileOnCanvas from "./src/Rendering";
+import RenderFileOnCanvas from "./Rendering";
 
 var DialogLine = 1;
 const MaxWindows = 8;
@@ -19,7 +18,6 @@ function setup() {
            document.querySelector('#Dialog').classList.add('minimized');
         }
     });
-    //document.querySelector('#objViewCont .objViewWin canvas').addEventListener("click", event => { RenderOnCanvas(event) });
     AddToDialog("Good morning folks... ");
     AddToDialog("I don't care for the actual time... Have Fun");
     AssignBtns();
