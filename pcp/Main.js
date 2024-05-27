@@ -54,7 +54,7 @@ function RemoveView(event) {
     if (viewCont.childElementCount > 1) {
         viewCont.removeChild(event.target.parentNode.parentNode);
         if (viewCont.childElementCount == 1) {
-            document.getElementById("combine").classList.add("hidden");
+            document.getElementById("combine").classList.add("hidden"); 
         }
     }
 }
@@ -66,21 +66,38 @@ function OpenSetPointsMenu() {
 
 function GetCombinedFile() /*Script written by ChatGBT for testing purposes*/
 {
-    document.getElementById('combine').addEventListener('click', () => {
-        fetch('http://localhost:18080/filenames')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(data => {
-                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
-            })
-            .catch(error => {
-                console.error('There has been a problem with your fetch operation:', error);
-            });
-    });
+    // this Will be the 3-4 files (3D File, Scanned File and the corresponding picked Points)
+    var requestData = {
+        data1: "value1",
+        data2: "value2",
+        data3: "value3"
+    };
+
+    // Fetch request options
+    var requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+    };
+
+    // Send the fetch request
+    fetch('http://localhost:18080/processData', requestOptions)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Process the aggregated response data received from the server
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('There has been a problem with your fetch operation:', error);
+        });
+
 }
         
 window.addEventListener("load", setup);

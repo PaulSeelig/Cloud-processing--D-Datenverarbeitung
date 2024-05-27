@@ -124,7 +124,7 @@ body button.special-btn{
     transition: 1s ease-in-out all;
 }
 .hidden{
-visibility: hidden;
+    visibility: hidden;
 }
 .hide{
     right:    0;
