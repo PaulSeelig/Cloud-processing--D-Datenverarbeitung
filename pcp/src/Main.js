@@ -76,8 +76,8 @@ function ImportFile(eventtarget)
     if (eventtarget.files.length > 0) {
         const file = eventtarget.files[0];
         const graParent = eventtarget.parentNode.parentNode;
-        const canvas = graParent.querySelector('canvas');
-        const p = graParent.querySelector('.hint').classList.add("hidden"); 
+        const canvas = graParent.querySelector('canvas')
+        graParent.querySelector('.hint').classList.add("hidden"); 
         file.onload = RenderFileOnCanvas(file, canvas);
     }
 }

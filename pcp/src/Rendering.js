@@ -11,7 +11,10 @@ function RenderFileOnCanvas(file, canvas)
 {
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas, alpha: true });
     renderer.setClearColor(0x000000, 0);
-    const { scene, camera} = AddScene();
+    const { scene, camera } = AddScene();
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    //controls. = new THREE.Vector3(1, 0, 0);
     let D3_Mesh;
     const reader = new FileReader();
     const pointsize = canvas.parentNode.querySelector('.pointsize');
@@ -55,6 +58,7 @@ function RenderFileOnCanvas(file, canvas)
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
             camera.updateProjectionMatrix();
         }
+        controls.update();
         renderer.render(scene, camera);
 
         if (rotate.checked) {scene.rotation.z = 0.00025 * time;}

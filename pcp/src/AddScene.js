@@ -6,6 +6,7 @@ function AddScene()
     const light = new THREE.DirectionalLight(0xffffff, 1);
     {
         camera.position.set(0, -150, 0);
+        camera.up.set(0, 0, 1);
         camera.lookAt(0, 1, 0);
         light.position.set(100, -100, 200);
         scene.add(light);
