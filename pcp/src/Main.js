@@ -1,4 +1,3 @@
-import ReactDOM from 'react-dom/client';
 import RenderFileOnCanvas from "./Rendering";
 
 var DialogLine = 1;
@@ -52,12 +51,14 @@ function Highlight(element)
 function AssignBtns()
 {
     document.querySelector('.objViewWin:last-child .option-menu .closeBtn').addEventListener("click", event => { RemoveView(event) });
-    document.querySelector('.objViewWin:last-child .option-menu .import').addEventListener("change", event => { ImportFile(event.target) });
+    var importinput = document.querySelector('.objViewWin:last-child .option-menu .import')
+    importinput.addEventListener("change", event => { ImportFile(event.target) });
+    document.querySelector('.objViewWin:last-child input.dragndrop').addEventListener("change", event => { ImportFile(event.target) });
 }
 function AddView() {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
     if (viewcont.childElementCount < MaxWindows) {
-
+         
         viewcont.appendChild(document.querySelector('#objViewCont .objViewWin').cloneNode(true));
         AssignBtns();
         if (document.querySelector('.objViewWin:last-child .hint.hidden')) {
@@ -74,8 +75,9 @@ function ImportFile(eventtarget)
 {
     if (eventtarget.files.length > 0) {
         const file = eventtarget.files[0];
-        const canvas = eventtarget.parentNode.nextElementSibling;
-        canvas.nextElementSibling.classList.add("hidden"); 
+        const graParent = eventtarget.parentNode.parentNode;
+        const canvas = graParent.querySelector('canvas');
+        const p = graParent.querySelector('.hint').classList.add("hidden"); 
         file.onload = RenderFileOnCanvas(file, canvas);
     }
 }
@@ -103,19 +105,19 @@ function OpenSetPointsMenu() {
 }
 
 
-function handleFile(event) {
-    const file = event.target.files[0];
-    if (!file) {
-        return;
-    }
+//function handleFile(event) {
+//    const file = event.target.files[0];
+//    if (!file) {
+//        return;
+//    }
 
-    scanService.load3DScan(file).then(model => {
-        const container = document.querySelector('#objViewCont .objViewWin');
-        scanService.visualize3DScan(container);
-    }).catch(error => {
-        console.error('Error loading 3D scan:', error);
-    });
-}
+//    scanService.load3DScan(file).then(model => {
+//        const container = document.querySelector('#objViewCont .objViewWin');
+//        scanService.visualize3DScan(container);
+//    }).catch(error => {
+//        console.error('Error loading 3D scan:', error);
+//    });
+//}
 
 
 
