@@ -18,22 +18,35 @@ int main()
     app.loglevel(crow::LogLevel::Info);
 
     //Export 3D Data conversion Handler
-    Crow_Route(app, "/export")
-        .methods("POST"_methods)
-        ([](const crow::request& req)) {
-
-        return 0;
+    CROW_ROUTE(app, "/export")
+        .methods("POST"_method)
+        ([](const crow::request& req) {
+            crow::json::rvalue recievedData;
+            try {
+                recievedData = crow::json::load(req.body);
+            }
+            catch (const std::exception& e) {
+                return crow::response(400);
+            }
+            crow::json::wvalue response;
+            response["message"] = "Not implemented yet";
+            crow::response res(response);
+            res.add_header("Access-Control-Allow-Origin", "*"); // Set CORS header
+            return res;
     });
 
     //Get request for merged Data
     CROW_ROUTE(app, "/mergedData")
         ([&]() {
         crow::json::wvalue response;
+        response["message"] = "Not implemented yet";
+        crow::response res(response);
+        res.add_header("Access-Control-Allow-Origin", "*"); // Set CORS header
         return res;
             });
 
     //Merge Handler send back data recieved? or fully merged Data
-    CROW_ROUTE(app, "/processData") 
+    CROW_ROUTE(app, "/processData")
         .methods("POST"_method)
         ([](const crow::request& req) {
             // Parse JSON data from the request body
