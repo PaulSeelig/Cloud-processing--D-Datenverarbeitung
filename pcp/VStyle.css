@@ -115,7 +115,7 @@ input.pointsize {
     z-index: 4;
     margin: 0 .5em;
 }
-button.Windbtn.objViewBtn {
+/*button.Windbtn.objViewBtn {
     background: #FFF;
     color: #000;
     display: flex;
@@ -124,7 +124,7 @@ button.Windbtn.objViewBtn {
     font-size: 1.1em;
     align-items: center;
     border: 1px solid #000;
-}
+}*/
 .import::-webkit-file-upload-button {
     visibility: hidden;
 }
@@ -150,24 +150,6 @@ button.Windbtn.objViewBtn {
 .import:active::before {
     background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9);
 }
-body button.special-btn{
-    position: absolute;
-    margin: auto;
-    height: fit-content;
-    width: 8em;
-    right: calc(50% - 4em);
-    z-index: 3;
-    border-radius: 25%;
-    bottom: 50%;
-    background: radial-gradient(rgb(12 154 189), #048d64f7);
-    box-shadow: 1px 2px 5px 3px #0009;
-    border: 5px groove #00000069;
-    font-style: italic;
-    font-weight: bold;
-    text-shadow: 1px 1px 4px #000;
-    font-size: 1.05rem;
-    transition: 1s ease-in-out all;
-}
 .hidden{
     visibility: hidden;
 }
@@ -175,16 +157,21 @@ body button.special-btn{
     bottom: -50%;
     left: -10%;
 }
+button.special-btn {
+    height: auto;
+    padding: .5em;
+    border: 1px solid;
+    position: absolute;
+    z-index: 3;
+    border-radius: 25%;
+    font-style: italic;
+    transition: 1s ease-in-out all;
+}
 button#showOrHideDialog {
     left: 1.5em;
-    height: auto;
     background: #000;
     bottom: 3em;
-    color: white;
     position: fixed;
-    padding: .5em;
-    border-radius: 20%;
-    border: 1px solid;
 }
 
 .egPic{    
@@ -217,9 +204,24 @@ button#showOrHideDialog {
 }
 .objViewWin .option-menu {
     min-height: 10px;
-    height: 1.3em;
+    height: 1.5em;
     background: linear-gradient(5deg, rgb(102 254 389 / 41%), #1f816844, #77000020);
     font-size: 1em !important;
+}
+button.Windbtn.closeBtn.objViewBtn:hover {
+    background: #ff9a9a59;
+}
+button.Windbtn.objViewBtn {
+    background: #ffffff00;
+    color: #fff;
+    display: flex;
+    width: 3em;
+    margin: 0;
+    padding: .1em .2em;
+    font-size: 1.1em;
+    align-items: center;
+    border: 1px solid #a9a9a9;
+    justify-content: center;
 }
 button:nth-child(even) {
     background: #fff0;
@@ -234,4 +236,5 @@ button
     height: 100%;
     border: none;
     z-index: 3;
+    color: white;
 }

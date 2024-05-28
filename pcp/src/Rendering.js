@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import ReactDOM from 'react-dom/client';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { PCDLoader } from 'three/addons/loaders/PCDLoader.js';
+import { XYZLoader } from 'three/addons/loaders/XYZLoader.js';
 import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { randFloat, randInt } from 'three/src/math/MathUtils';
@@ -15,7 +15,7 @@ function RenderFileOnCanvas(file, canvas)
 
     const controls = new OrbitControls(camera, renderer.domElement);
     //controls. = new THREE.Vector3(1, 0, 0);
-    let D3_Mesh;
+    var D3_Mesh = new THREE.Points();
     const reader = new FileReader();
     const pointsize = canvas.parentNode.querySelector('.pointsize');
     const pointclr = canvas.parentNode.querySelector('[name="colors"]');
@@ -23,18 +23,29 @@ function RenderFileOnCanvas(file, canvas)
     reader.readAsDataURL(file);
     reader.onload = (e) =>
     {
-        new PLYLoader().load(e.target.result,
-            function (e)
-            {
-                D3_Mesh = new THREE.Points(e.center(), CreatePointsMaterial());
-                pointsize.addEventListener("input", function () { D3_Mesh.material = CreatePointsMaterial() });
-                pointclr.addEventListener("input", function () { D3_Mesh.material = CreatePointsMaterial() });
-
-                scene.add(D3_Mesh);
-            },
-            undefined,
-            function (error) { console.error(error); }
-        );        
+        if (file.name.endsWith('.ply')) {
+            new PLYLoader().load(e.target.result,
+                function (e) {
+                    D3_Mesh = new THREE.Points(e.center(), CreatePointsMaterial());
+                    scene.add(D3_Mesh);
+                },
+                undefined,
+                function (error) { console.error(error); }
+            );
+        }
+        else if (file.name.endsWith('.xyz')) {
+            new XYZLoader().load(e.target.result,
+                function (e) {
+                    D3_Mesh = new THREE.Points(e.center(), CreatePointsMaterial());
+                    scene.add(D3_Mesh);
+                },
+                undefined,
+                function (error) { console.error(error); }
+            );
+        }
+        else {return console.error("Not supported file") }
+        pointsize.addEventListener("input", function () { D3_Mesh.material = CreatePointsMaterial() });
+        pointclr.addEventListener("input", function () { D3_Mesh.material = CreatePointsMaterial() });
     };
     function CreatePointsMaterial() { return new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 500000 }) }
     function resizeRendererToDisplaySize(renderer)

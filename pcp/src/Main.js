@@ -57,14 +57,16 @@ function AssignBtns()
 }
 function AddView() {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
-    if (viewcont.childElementCount < MaxWindows) {
-         
+    var winCount = viewcont.childElementCount;
+    if (winCount < MaxWindows) {
+        if (winCount == 1) { viewcont.querySelector('.closeBtn').classList.remove("not_accessible"); }
         viewcont.appendChild(document.querySelector('#objViewCont .objViewWin').cloneNode(true));
         AssignBtns();
         if (document.querySelector('.objViewWin:last-child .hint.hidden')) {
             document.getElementsByClassName("hint hidden").item(document.getElementsByClassName("hint hidden").length - 1).classList.remove("hidden");
         }
-        if (viewcont.childElementCount == MaxWindows) { document.getElementById('Addbtn').classList.add("not_accessible"); }
+        if (winCount == MaxWindows) { document.getElementById('Addbtn').classList.add("not_accessible"); }
+        
     }
     else
     {
@@ -86,17 +88,27 @@ function AddToDialog(diamessage)
     document.querySelector('#Dialog p').innerHTML += "<br>" + DialogLine + ": " + diamessage;
     DialogLine++;
 }
+var dialin = 0;
 function RemoveView(event)
 {    
+    
+    var dias = ["...", "You can't do this...", "...", ".......", "You don't want to do this", "...", "...", "...", "We are protecting you from the vast nothing, the eternal blindness of ceasing matter, the uncomprehendable darkness of the never ending light...", "...", "...", "..", ".", ""];
     var viewCont = document.getElementById("objViewCont");
-    if (viewCont.childElementCount > 1)
-    {
+    if (viewCont.childElementCount > 1) {
         viewCont.removeChild(event.target.parentNode.parentNode);
-        if (viewCont.childElementCount == (MaxWindows - 1))
-        {
+        if (viewCont.childElementCount == (MaxWindows - 1)) {
             document.getElementById('Addbtn').classList.remove("not_accessible");
         }
+        else if (viewCont.childElementCount == 1) {
+            viewCont.querySelector('.closeBtn').classList.add("not_accessible");
     }
+}
+    else
+    {
+        AddToDialog(dias[dialin]);
+        dialin += dialin < (dias.length - 1)?  1: 0;
+    }
+
 }
 
 function OpenSetPointsMenu() {
