@@ -12,9 +12,27 @@
 
 int main()
 {
+    //App
     crow::SimpleApp app;
+    //Logger for debugging
     app.loglevel(crow::LogLevel::Info);
 
+    //Export 3D Data conversion Handler
+    Crow_Route(app, "/export")
+        .methods("POST"_methods)
+        ([](const crow::request& req)) {
+
+        return 0;
+    });
+
+    //Get request for merged Data
+    CROW_ROUTE(app, "/mergedData")
+        ([&]() {
+        crow::json::wvalue response;
+        return res;
+            });
+
+    //Merge Handler send back data recieved? or fully merged Data
     CROW_ROUTE(app, "/processData") 
         .methods("POST"_method)
         ([](const crow::request& req) {

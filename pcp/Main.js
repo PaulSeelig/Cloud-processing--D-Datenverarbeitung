@@ -1,7 +1,3 @@
-import ReactSetPointMenu from "./src/ReactComponent";
-import ReactDOM from 'react-dom/client';
-import RenderFileOnCanvas from "./src/Rendering";
-
 function setup() {
     document.getElementById("Addbtn").addEventListener("click", AddView);
     //document.getElementById("Removebtn").addEventListener("click", RemoveView);
