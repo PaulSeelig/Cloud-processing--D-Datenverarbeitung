@@ -168,7 +168,7 @@ body button.special-btn{
     transition: 1s ease-in-out all;
 }
 .hidden{
-visibility: hidden;
+    visibility: hidden;
 }
 #Dialog.minimized {
     bottom: -50%;
