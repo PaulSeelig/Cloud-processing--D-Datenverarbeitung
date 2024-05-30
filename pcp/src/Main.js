@@ -1,10 +1,14 @@
+import { createContext } from "react";
 import RenderFileOnCanvas from "./Rendering";
 
 var DialogLine = 1;
 const MaxWindows = 8;
+const clone = document.querySelector('#objViewCont .objViewWin').cloneNode(true);
 function setup() {
     document.getElementById("Addbtn").addEventListener("click", AddView);
     document.getElementById("combine").addEventListener("click", Combine);
+
+    //document.getElementById("combine").addEventListener("click", GetCombinedFile);
 
     document.getElementById("saveBtn").addEventListener("click", SaveFile);
     document.getElementById("DarkLightBtn").addEventListener("click", DarkLightMode);
@@ -23,7 +27,8 @@ function setup() {
     AddView();
 
     // Create a new instance of MutationObserver, passing it a callback function // same as adventlistener, but can handle the change of innerHTML
-    const observer = new MutationObserver(function () {
+    const observer = new MutationObserver(function ()
+    {
         if (document.querySelectorAll('#Dialog.minimized').length > 0) {
             document.querySelector('#Dialog').classList.remove('minimized');
         }
@@ -50,22 +55,45 @@ function Highlight(element)
 }
 function AssignBtns()
 {
-    document.querySelector('.objViewWin:last-child .option-menu .closeBtn').addEventListener("click", event => { RemoveView(event) });
-    var importinput = document.querySelector('.objViewWin:last-child .option-menu .import')
+    document.querySelector('.objViewWin:last-child .option-menu .closeBtn').addEventListener("click", event => { RemoveView(event.target, true) });
+    document.querySelector('.objViewWin:last-child .option-menu .miniBtn').addEventListener("click", event => { RemoveView(event.target, false) });
+    var importinput = document.querySelector('.objViewWin:last-child .option-menu .import');
     importinput.addEventListener("change", event => { ImportFile(event.target) });
     document.querySelector('.objViewWin:last-child input.dragndrop').addEventListener("change", event => { ImportFile(event.target) });
 }
-function AddView() {
+function MiniView(evlement)
+{    
+    const view = evlement.parentNode.parentNode;
+    if (view.title == "") { RemoveView(evlement, true); }
+    else
+    {
+        view.classList.add('minimized');
+        view.querySelector('.rotateBtn').checked = false;
+        const btn = document.createElement("button");
+        btn.innerHTML = view.title;
+        btn.addEventListener("click", function () {
+            view.classList.remove('minimized');
+            document.getElementById('miniViewContainer').removeChild(btn);
+        })
+        document.getElementById('miniViewContainer').appendChild(btn);
+    }
+}
+function AddView()
+{
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
     var winCount = viewcont.childElementCount;
-    if (winCount < MaxWindows) {
-        if (winCount == 1) { viewcont.querySelector('.closeBtn').classList.remove("not_accessible"); }
-        viewcont.appendChild(document.querySelector('#objViewCont .objViewWin').cloneNode(true));
-        AssignBtns();
-        if (document.querySelector('.objViewWin:last-child .hint.hidden')) {
-            document.getElementsByClassName("hint hidden").item(document.getElementsByClassName("hint hidden").length - 1).classList.remove("hidden");
+    if (winCount < MaxWindows)
+    {
+        if (winCount == 1) {
+            viewcont.querySelector('.closeBtn').classList.remove("not_accessible");
+            viewcont.querySelector('.miniBtn').classList.remove("not_accessible");
         }
-        if (winCount == MaxWindows) { document.getElementById('Addbtn').classList.add("not_accessible"); }
+        viewcont.appendChild(clone.cloneNode(true));
+        AssignBtns();
+        if (winCount == MaxWindows)
+        {
+            document.getElementById('Addbtn').classList.add("not_accessible");
+        }
         
     }
     else
@@ -78,6 +106,7 @@ function ImportFile(eventtarget)
     if (eventtarget.files.length > 0) {
         const file = eventtarget.files[0];
         const graParent = eventtarget.parentNode.parentNode;
+        graParent.title = file.name;
         const canvas = graParent.querySelector('canvas')
         graParent.querySelector('.hint').classList.add("hidden"); 
         file.onload = RenderFileOnCanvas(file, canvas);
@@ -89,31 +118,32 @@ function AddToDialog(diamessage)
     DialogLine++;
 }
 var dialin = 0;
-function RemoveView(event)
+function RemoveView(evlement, doDelete)
 {    
     
     var dias = ["...", "You can't do this...", "...", ".......", "You don't want to do this", "...", "...", "...", "We are protecting you from the vast nothing, the eternal blindness of ceasing matter, the uncomprehendable darkness of the never ending light...", "...", "...", "..", ".", ""];
     var viewCont = document.getElementById("objViewCont");
-    if (viewCont.childElementCount > 1) {
-        viewCont.removeChild(event.target.parentNode.parentNode);
+    const miniviewCount = document.getElementById('miniViewContainer').childElementCount;
+    if (viewCont.childElementCount - miniviewCount > 1) {
+        if (!doDelete) {
+            MiniView(evlement)
+        }
+        else {
+            viewCont.removeChild(evlement.parentNode.parentNode);
+        }
         if (viewCont.childElementCount == (MaxWindows - 1)) {
             document.getElementById('Addbtn').classList.remove("not_accessible");
         }
-        else if (viewCont.childElementCount == 1) {
+        if (viewCont.childElementCount - miniviewCount == 1) {
             viewCont.querySelector('.closeBtn').classList.add("not_accessible");
+            viewCont.querySelector('.miniBtn').classList.add("not_accessible");
+        }
     }
-}
     else
     {
         AddToDialog(dias[dialin]);
         dialin += dialin < (dias.length - 1)?  1: 0;
     }
-
-}
-
-function OpenSetPointsMenu() {
-    var roo = document.getElementById("root");
-    roo.childElementCount > 0 ? roo.childNodes.forEach(roo.removeChild(roo.firstChild)) : ReactDOM.createRoot(roo).render(ReactSetPointMenu());
 }
 
 
@@ -131,7 +161,5 @@ function OpenSetPointsMenu() {
 //    });
 //}
 
-
-
 window.addEventListener("load", setup);
-setupMockApi();
+//setupMockApi();

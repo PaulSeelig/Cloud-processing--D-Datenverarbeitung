@@ -13,6 +13,18 @@
     align-items: center;
     box-shadow: inset 0 0 25px 10px #897c7caa;
 }
+#miniViewContainer{
+    height: 100%;
+}
+#miniViewContainer button {
+    border: 1px solid white;
+    border-radius: 70% 70% 0;
+    border-bottom: 1px dotted #d4d7da;
+}
+.objViewWin.minimized {
+    position: absolute;
+    bottom: -100%;
+}
 .dragndrop {
     width: 100%;
     height: 100%;
@@ -154,7 +166,7 @@ input.pointsize {
     visibility: hidden;
 }
 #Dialog.minimized {
-    bottom: -50%;
+    bottom: -50vh;
     left: -10%;
 }
 button.special-btn {

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { XYZLoader } from 'three/addons/loaders/XYZLoader.js';
 import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 import { randFloat, randInt } from 'three/src/math/MathUtils';
 import AddScene from './AddScene';
@@ -35,6 +36,16 @@ function RenderFileOnCanvas(file, canvas)
         }
         else if (file.name.endsWith('.xyz')) {
             new XYZLoader().load(e.target.result,
+                function (e) {
+                    D3_Mesh = new THREE.Points(e.center(), CreatePointsMaterial());
+                    scene.add(D3_Mesh);
+                },
+                undefined,
+                function (error) { console.error(error); }
+            );
+        }
+        else if (file.name.endsWith('.stl')) {
+            new STLLoader().load(e.target.result,
                 function (e) {
                     D3_Mesh = new THREE.Points(e.center(), CreatePointsMaterial());
                     scene.add(D3_Mesh);

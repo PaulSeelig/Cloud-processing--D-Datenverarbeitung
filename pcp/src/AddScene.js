@@ -2,7 +2,7 @@ import * as THREE from 'three';
 function AddScene()
 {
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(100, 2, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(100, 2, 0.001, 1000);
     const light = new THREE.DirectionalLight(0xffffff, 1);
     {
         camera.position.set(0, -150, 0);
