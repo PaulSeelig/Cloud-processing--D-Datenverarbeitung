@@ -26,6 +26,7 @@ int main()
             //This will be where the code to deciver the incoming Data
             //recieved json data (if thats how we are doing it)
             crow::json::rvalue recievedData;
+
             //test to see if its a json object
             try {
                 recievedData = crow::json::load(req.body);
@@ -34,6 +35,7 @@ int main()
                 return crow::response(400); //wrong data type
             }
             
+            //Crow Response
             crow::json::wvalue response;
             response["message"] = "not implemented yet";
             crow::response res(response);
@@ -51,15 +53,18 @@ int main()
 
             //Crow response initialisation
             crow::response res;
-      
+
+            //Testing filepath
             std::ifstream file(filePath);
             if (!file.is_open()) {
                 res.body = "Error while opening the file";
                 return res;
             }
 
+            //reading Filepath
             std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
+            //Setting up Response
             res.set_header("Content-Type", mimeType);
             res.body = fileContent;
             return res;
@@ -71,6 +76,8 @@ int main()
         ([](const crow::request& req) {
             // Parse JSON data from the request body
             crow::json::rvalue data2Combine;
+
+            //Test if the send object is a Json Obj
             try {
                 data2Combine = crow::json::load(req.body);
             }
@@ -84,37 +91,32 @@ int main()
             std::cout << "Received data 2: " << data2Combine["data2"].s() << std::endl;
             std::cout << "Received data 3: " << data2Combine["data3"].s() << std::endl;
 
-            // Aggregate data and send back a single response
+            //initialize data and send back a single response
             //Data should be a .ply or .xyz file need further understanding how to do this
             crow::json::wvalue combinedData;
             combinedData["message"] = "Data processed successfully";
             combinedData["status"] = "success";
 
+            //Initialize Response
             crow::response res(combinedData);
 
-            res.add_header("Access-Control-Allow-Origin", "*"); // Set CORS header
-            res.add_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-            res.add_header("Access-Control-Allow-Headers", "Content-Type");
-
-            //CROW_LOG_INFO << "Response: " << res.;
-
+            //Headers:
+            res.add_header("Access-Control-Allow-Origin", "*");
+            
             return res;
             });
 
-    //Pre Cors Handler 
+    //Pre Cors Handler needed for the Post request
     CROW_ROUTE(app, "/processData").methods("OPTIONS"_method)
         ([](const crow::request& req) {
             crow::response res;
 
+            //Headers:
             res.add_header("Access-Control-Allow-Origin", "*");
-            res.add_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-            res.add_header("Access-Control-Allow-Headers", "Content-Type");
-
-      
 
             return res;
             });
 
-      
+    //Starts the server
     app.port(18080).multithreaded().run();
 }
