@@ -1,11 +1,8 @@
 import * as THREE from 'three';
-import ReactDOM from 'react-dom/client';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { XYZLoader } from 'three/addons/loaders/XYZLoader.js';
 import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-import { randFloat, randInt } from 'three/src/math/MathUtils';
 import AddScene from './AddScene';
 
 function RenderFileOnCanvas(file, canvas)
@@ -15,7 +12,6 @@ function RenderFileOnCanvas(file, canvas)
     const { scene, camera } = AddScene();
 
     const controls = new OrbitControls(camera, renderer.domElement);
-    //controls. = new THREE.Vector3(1, 0, 0);
     var D3_Mesh = new THREE.Points();
     const reader = new FileReader();
     const pointsize = canvas.parentNode.querySelector('.pointsize');
