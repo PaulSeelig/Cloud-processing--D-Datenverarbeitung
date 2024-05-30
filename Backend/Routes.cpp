@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <string>
+#include <fstream>
+#include <sstream>
 
 #include "crow.h"
 #include <crow/json.h>
@@ -10,39 +12,72 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
+bool readFileInChunks(const std::string& filePath, std::string& fileContent) {
+    std::ifstream file(filePath, std::ios::binary);
+    if (!file.is_open()) {
+        return false;
+    }
+
+    std::ostringstream oss;
+    char buffer[4096];
+    while (file.read(buffer, sizeof(buffer))) {
+        oss.write(buffer, sizeof(buffer));
+    }
+    oss.write(buffer, file.gcount()); // Write any remaining data
+    fileContent = oss.str();
+
+    return true;
+}
+
 int main()
 {
     //App
     crow::SimpleApp app;
     //Logger for debugging
-    app.loglevel(crow::LogLevel::Info);
+    app.loglevel(crow::LogLevel::Debug);
 
     //Export 3D Data conversion Handler
     CROW_ROUTE(app, "/export")
         .methods("POST"_method)
         ([](const crow::request& req) {
+            //This will be where the code to deciver the incoming Data
+            //recieved json data (if thats how we are doing it)
             crow::json::rvalue recievedData;
+            //test to see if its a json object
             try {
                 recievedData = crow::json::load(req.body);
             }
             catch (const std::exception& e) {
-                return crow::response(400);
+                return crow::response(400); //wrong data type
             }
+            
             crow::json::wvalue response;
-            response["message"] = "Not implemented yet";
+            response["message"] = "not implemented yet";
             crow::response res(response);
-            res.add_header("Access-Control-Allow-Origin", "*"); // Set CORS header
             return res;
     });
 
     //Get request for merged Data
     CROW_ROUTE(app, "/mergedData")
         ([&]() {
-        crow::json::wvalue response;
-        response["message"] = "Not implemented yet";
-        crow::response res(response);
-        res.add_header("Access-Control-Allow-Origin", "*"); // Set CORS header
-        return res;
+            //The Content type differs for xyz, ply or stl (for testing purposes its allways "application/octet-stream")
+            std::string mimeType = "application/octet-stream";
+
+            //Filepath might be needed if we temporarily store all merged data
+            std::string filePath = "C:\\Users\\tn\\source\\repos\\team-5-cloud-processing-gfai-3d-datenverarbeitung\\Backend\\beethoven_1.ply";
+
+            //Crow response initialisation
+            crow::response res;
+
+            std::string fileContent;
+            if (!readFileInChunks(filePath, fileContent)) {
+                res.code = 404;
+                return res;
+            }
+
+            res.set_header("Content-Type", mimeType);
+            res.body = fileContent;
+            return res;
             });
 
     //Merge Handler send back data recieved? or fully merged Data
