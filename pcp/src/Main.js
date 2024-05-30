@@ -43,9 +43,20 @@ function SaveFile()
 {
     AddToDialog("Uuuuhm... Nothing there to save...")
 }
-function Combine()
+async function Combine()
 {
-    AddToDialog("Sorry, this is not coded yet...")
+    const requestOptions = {
+        method: "GET",
+        redirect: "follow"
+    };
+
+    const combinedData = await fetch("http://localhost:18080/mergedData", requestOptions);
+
+    //would prefer to call a drawtocanvas method
+    const graParent = document.getElementById("objViewWin")
+    const canvas = graParent.querySelector('canvas')
+    graParent.querySelector('.hint').classList.add("hidden");
+    combinedData.onload = RenderFileOnCanvas(combinedData, canvas);
 }
 function Highlight(element)
 {
