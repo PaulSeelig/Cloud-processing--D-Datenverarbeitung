@@ -12,23 +12,6 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-bool readFileInChunks(const std::string& filePath, std::string& fileContent) {
-    std::ifstream file(filePath, std::ios::binary);
-    if (!file.is_open()) {
-        return false;
-    }
-
-    std::ostringstream oss;
-    char buffer[4096];
-    while (file.read(buffer, sizeof(buffer))) {
-        oss.write(buffer, sizeof(buffer));
-    }
-    oss.write(buffer, file.gcount()); // Write any remaining data
-    fileContent = oss.str();
-
-    return true;
-}
-
 int main()
 {
     //App
@@ -61,19 +44,21 @@ int main()
     CROW_ROUTE(app, "/mergedData")
         ([&]() {
             //The Content type differs for xyz, ply or stl (for testing purposes its allways "application/octet-stream")
-            std::string mimeType = "application/octet-stream";
+            std::string mimeType = "chemical/x-xyz";
 
             //Filepath might be needed if we temporarily store all merged data
-            std::string filePath = "C:\\Users\\tn\\source\\repos\\team-5-cloud-processing-gfai-3d-datenverarbeitung\\Backend\\beethoven_1.ply";
+            std::string filePath = "C:\\Users\\tn\\source\\repos\\team-5-cloud-processing-gfai-3d-datenverarbeitung\\Models\\beethoven_2.xyz";
 
             //Crow response initialisation
             crow::response res;
-
-            std::string fileContent;
-            if (!readFileInChunks(filePath, fileContent)) {
-                res.code = 404;
+      
+            std::ifstream file(filePath);
+            if (!file.is_open()) {
+                res.body = "Error while opening the file";
                 return res;
             }
+
+            std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
             res.set_header("Content-Type", mimeType);
             res.body = fileContent;
