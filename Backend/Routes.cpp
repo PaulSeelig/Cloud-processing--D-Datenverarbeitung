@@ -66,6 +66,10 @@ int main()
 
             //Setting up Response
             res.set_header("Content-Type", mimeType);
+
+            //Headers:
+            res.add_header("Access-Control-Allow-Origin", "*");
+
             res.body = fileContent;
             return res;
             });
