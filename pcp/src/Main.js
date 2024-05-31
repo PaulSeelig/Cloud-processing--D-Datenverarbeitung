@@ -1,4 +1,3 @@
-import { createContext } from "react";
 import RenderFileOnCanvas from "./Rendering";
 
 var DialogLine = 1;
