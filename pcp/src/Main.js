@@ -4,7 +4,7 @@ var DialogLine = 1;
 const MaxWindows = 8;
 const clone = document.querySelector('#objViewCont .objViewWin').cloneNode(true);
 function setup() {
-    document.getElementById("Addbtn").addEventListener("click", AddView);
+    document.getElementById("Addbtn").addEventListener("click", nul => { AddView(null) });
     document.getElementById("combine").addEventListener("click", Combine);
 
     //document.getElementById("combine").addEventListener("click", GetCombinedFile);
@@ -21,9 +21,8 @@ function setup() {
         }
     });
     AddToDialog("Good morning folks... ");
-    AddToDialog("I don't care for the actual time... Have Fun");
     AssignBtns();
-    AddView();
+    AddView(null);
 
     // Create a new instance of MutationObserver, passing it a callback function // same as adventlistener, but can handle the change of innerHTML
     const observer = new MutationObserver(function ()
@@ -34,6 +33,8 @@ function setup() {
     });
     // Call 'observe' on the MutationObserver instance, specifying the element to observe
     observer.observe(document.querySelector('#Dialog p'), { childList: true });
+
+    AddToDialog("I don't care for the actual time... Have Fun");
 }
 function DarkLightMode()
 {
@@ -45,6 +46,8 @@ function SaveFile()
 }
 async function Combine()
 {
+    //var file = document.querySelector('.import').files[0];
+    //AddView(file);
     const requestOptions = {
         method: "GET",
         redirect: "follow"
@@ -52,11 +55,8 @@ async function Combine()
 
     const combinedData = await fetch("http://localhost:18080/mergedData", requestOptions);
 
-    //would prefer to call a drawtocanvas method
-    const graParent = document.getElementById("objViewWin")
-    const canvas = graParent.querySelector('canvas')
-    graParent.querySelector('.hint').classList.add("hidden");
-    combinedData.onload = RenderFileOnCanvas(combinedData, canvas);
+    var file = new File();
+    AddView(file);
 }
 function Highlight(element)
 {
@@ -88,18 +88,23 @@ function MiniView(evlement)
         document.getElementById('miniViewContainer').appendChild(btn);
     }
 }
-function AddView()
+function AddView(combineFile)
 {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
     var winCount = viewcont.childElementCount;
-    if (winCount < MaxWindows)
+    if (winCount < MaxWindows || combineFile)
     {
         if (winCount == 1) {
             viewcont.querySelector('.closeBtn').classList.remove("not_accessible");
             viewcont.querySelector('.miniBtn').classList.remove("not_accessible");
         }
-        viewcont.appendChild(clone.cloneNode(true));
+        const viewclone = clone.cloneNode(true);
+        if (combineFile) {
+            visualFile(viewclone, combineFile);
+        }
+        viewcont.appendChild(viewclone);
         AssignBtns();
+        
         if (winCount == MaxWindows)
         {
             document.getElementById('Addbtn').classList.add("not_accessible");
@@ -116,11 +121,14 @@ function ImportFile(eventtarget)
     if (eventtarget.files.length > 0) {
         const file = eventtarget.files[0];
         const graParent = eventtarget.parentNode.parentNode;
-        graParent.title = file.name;
-        const canvas = graParent.querySelector('canvas')
-        graParent.querySelector('.hint').classList.add("hidden"); 
-        file.onload = RenderFileOnCanvas(file, canvas);
+        visualFile(graParent, file)
     }
+}
+function visualFile(objView, file) {
+    objView.title = file.name;
+    const canvas = objView.querySelector('canvas');
+    objView.querySelector('.hint').classList.add("hidden");
+    file.onload = RenderFileOnCanvas(file, canvas);
 }
 function AddToDialog(diamessage)
 {

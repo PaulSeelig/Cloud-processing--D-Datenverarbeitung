@@ -5,8 +5,21 @@ import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 import AddScene from './AddScene';
 
+
+let particles;
+
+const PARTICLE_SIZE = 20;
+
+let raycaster, intersects;
+let pointer, INTERSECTED;
+function onPointerClick(event) {
+    pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+    pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
+ }
+
 function RenderFileOnCanvas(file, canvas)
 {
+    
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas, alpha: true });
     renderer.setClearColor(0x000000, 0);
     const { scene, camera } = AddScene();
@@ -17,13 +30,17 @@ function RenderFileOnCanvas(file, canvas)
     const pointsize = canvas.parentNode.querySelector('.pointsize');
     const pointclr = canvas.parentNode.querySelector('[name="colors"]');
     const rotate = canvas.parentNode.querySelector('[name="rotate"]');
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    document.addEventListener('pointermove', onPointerClick);
+    const PointsMaterial = new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 500000 });
     reader.readAsDataURL(file);
     reader.onload = (e) =>
     {
         if (file.name.endsWith('.ply')) {
             new PLYLoader().load(e.target.result,
                 function (e) {
-                    D3_Mesh = new THREE.Points(e.center(), CreatePointsMaterial());
+                    D3_Mesh = new THREE.Points(e.center(), PointsMaterial);
                     scene.add(D3_Mesh);
                 },
                 undefined,
@@ -33,7 +50,7 @@ function RenderFileOnCanvas(file, canvas)
         else if (file.name.endsWith('.xyz')) {
             new XYZLoader().load(e.target.result,
                 function (e) {
-                    D3_Mesh = new THREE.Points(e.center(), CreatePointsMaterial());
+                    D3_Mesh = new THREE.Points(e.center(), PointsMaterial);
                     scene.add(D3_Mesh);
                 },
                 undefined,
@@ -43,7 +60,7 @@ function RenderFileOnCanvas(file, canvas)
         else if (file.name.endsWith('.stl')) {
             new STLLoader().load(e.target.result,
                 function (e) {
-                    D3_Mesh = new THREE.Points(e.center(), CreatePointsMaterial());
+                    D3_Mesh = new THREE.Points(e.center(), PointsMaterial);
                     scene.add(D3_Mesh);
                 },
                 undefined,
@@ -51,10 +68,9 @@ function RenderFileOnCanvas(file, canvas)
             );
         }
         else {return console.error("Not supported file") }
-        pointsize.addEventListener("input", function () { D3_Mesh.material = CreatePointsMaterial() });
-        pointclr.addEventListener("input", function () { D3_Mesh.material = CreatePointsMaterial() });
-    };
-    function CreatePointsMaterial() { return new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 500000 }) }
+        pointsize.addEventListener("input", function () { D3_Mesh.material.size = pointsize.value / 500000 });
+        pointclr.addEventListener("input", function () { D3_Mesh.material.color = new THREE.Color(pointclr.value) });// CreatePointsMaterial() });
+    }
     function resizeRendererToDisplaySize(renderer)
     {
         renderer.clear(true, true);
@@ -76,10 +92,38 @@ function RenderFileOnCanvas(file, canvas)
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
             camera.updateProjectionMatrix();
         }
+        
         controls.update();
+        //raycaster.params.Points.threshold = 0.1;
+        //raycaster.setFromCamera(pointer, camera);
+        //particles = D3_Mesh;
+        //intersects = raycaster.intersectObject(particles);
+
+        //if (intersects.length > 0) {
+
+        //    if (INTERSECTED != intersects[0].index) {
+
+        //        pointsize.array[INTERSECTED] = PARTICLE_SIZE;
+
+        //        INTERSECTED = intersects[0].index;
+
+        //        pointsize.array[INTERSECTED] = PARTICLE_SIZE * 1.25;
+        //        pointsize.needsUpdate = true;
+
+        //    }
+
+        //} else if (INTERSECTED != null) {
+
+        //    pointsize.array[INTERSECTED] = PARTICLE_SIZE;
+        //    pointsize.needsUpdate = true;
+        //    INTERSECTED = null;
+
+        //}
         renderer.render(scene, camera);
 
-        if (rotate.checked) {scene.rotation.z = 0.00025 * time;}
+        if (rotate.checked) { scene.rotation.z = 0.00025 * time; }
+
+        canvas.addEventListener('pointerchange', onPointerClick);
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);

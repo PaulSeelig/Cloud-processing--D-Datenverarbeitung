@@ -117,7 +117,7 @@ input.pointsize {
     overflow: auto;
     padding-left: 6em;
     border-color: #ccf;
-    transition: .8s ease-in-out all;
+    transition: .8s ease all;
     display: flex;
     flex-direction: column-reverse;
     justify-content: flex-start;
