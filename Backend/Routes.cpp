@@ -4,123 +4,170 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 #include "crow.h"
 #include <crow/json.h>
+#include <crow/multipart.h>
 #include <crow/middlewares/cors.h>
 //#include <nlohmann/json.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
+
+bool isValidPLY(const std::string& fileContent) {
+	// Simple check: PLY files should start with "ply"
+	return fileContent.find("ply") == 0;
+}
+
+
 int main()
 {
-    //App
-    crow::SimpleApp app;
-    //Logger for debugging
-    app.loglevel(crow::LogLevel::Debug);
+	//App
+	crow::SimpleApp app;
+	//Logger for debugging
+	app.loglevel(crow::LogLevel::Debug);
 
-    //Export 3D Data conversion Handler
-    CROW_ROUTE(app, "/export")
-        .methods("POST"_method)
-        ([](const crow::request& req) {
-            //This will be where the code to deciver the incoming Data
-            //recieved json data (if thats how we are doing it)
-            crow::json::rvalue recievedData;
 
-            //test to see if its a json object
-            try {
-                recievedData = crow::json::load(req.body);
-            }
-            catch (const std::exception& e) {
-                return crow::response(400); //wrong data type
-            }
-            
-            //Crow Response
-            crow::json::wvalue response;
-            response["message"] = "not implemented yet";
-            crow::response res(response);
-            return res;
-    });
+	//Code Audrik ------------------------
+	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
+		[](const crow::request& req) {
+			// Get the content type from the request header
+			std::string content_type = req.get_header_value("Content-Type");
 
-    //Get request for merged Data
-    CROW_ROUTE(app, "/mergedData")
-        ([&]() {
-            //The Content type differs for xyz, ply or stl (for testing purposes its allways "application/octet-stream")
-            std::string mimeType = "chemical/x-xyz";
+			// Check if the content type is multipart/form-data
+			if (content_type.find("multipart/form-data") != std::string::npos) {
+				// Parse the request body as multipart/form-data
+				crow::multipart::message msg(req);
 
-            //Filepath might be needed if we temporarily store all merged data
-            std::string filePath = "C:\\Users\\tn\\source\\repos\\team-5-cloud-processing-gfai-3d-datenverarbeitung\\Models\\beethoven_2.xyz";
+				// Loop through the parts of the message
+				for (const auto& part : msg.parts) {
+					// Check if the part corresponds to the "File" field
+					// Extract the file content
+					std::string fileContent = part.body;
 
-            //Crow response initialisation
-            crow::response res;
+					// Validate if the file content is a valid PLY file
+					if (!isValidPLY(fileContent)) {
+						return crow::response(400, "Invalid PLY file");
+					}
 
-            //Testing filepath
-            std::ifstream file(filePath);
-            if (!file.is_open()) {
-                res.body = "Error while opening the file";
-                return res;
-            }
+					// If valid, return the file content back
+					return crow::response(200, fileContent);
+				}
 
-            //reading Filepath
-            std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+				// If "File" part not found, return error response
+				return crow::response(400, "Missing or invalid file");
+			}
+			else {
+				// If content type is not multipart/form-data, return error response
+				return crow::response(400, "Invalid request format");
+			}
+		}
+	);
+	//--------------------------
 
-            //Setting up Response
-            res.set_header("Content-Type", mimeType);
+	//Export 3D Data conversion Handler
+	CROW_ROUTE(app, "/export")
+		.methods("POST"_method)
+		([](const crow::request& req) {
+		//This will be where the code to deciver the incoming Data
+		//recieved json data (if thats how we are doing it)
+		crow::json::rvalue recievedData;
 
-            //Headers:
-            res.add_header("Access-Control-Allow-Origin", "*");
+		//test to see if its a json object
+		try {
+			recievedData = crow::json::load(req.body);
+		}
+		catch (const std::exception& e) {
+			return crow::response(400); //wrong data type
+		}
 
-            res.body = fileContent;
-            return res;
-            });
+		//Crow Response
+		crow::json::wvalue response;
+		response["message"] = "not implemented yet";
+		crow::response res(response);
+		return res;
+			});
 
-    //Merge Handler send back data recieved? or fully merged Data
-    CROW_ROUTE(app, "/processData")
-        .methods("POST"_method)
-        ([](const crow::request& req) {
-            // Parse JSON data from the request body
-            crow::json::rvalue data2Combine;
+	//Get request for merged Data
+	CROW_ROUTE(app, "/mergedData")
+		([&]() {
+		//The Content type differs for xyz, ply or stl (for testing purposes its allways "application/octet-stream")
+		std::string mimeType = "chemical/x-xyz";
 
-            //Test if the send object is a Json Obj
-            try {
-                data2Combine = crow::json::load(req.body);
-            }
-            catch (const std::exception& e) {
-                return crow::response(400);
-            }
+		//Filepath might be needed if we temporarily store all merged data
+		std::string filePath = "C:\\Users\\tn\\source\\repos\\team-5-cloud-processing-gfai-3d-datenverarbeitung\\Models\\beethoven_2.xyz";
 
-            // Process the received data
-            //split into file 1, file 2, file 1 points picked and file 2 points picked (or points picked are one file?)
-            std::cout << "Received data 1: " << data2Combine["data1"].s() << std::endl;
-            std::cout << "Received data 2: " << data2Combine["data2"].s() << std::endl;
-            std::cout << "Received data 3: " << data2Combine["data3"].s() << std::endl;
+		//Crow response initialisation
+		crow::response res;
 
-            //initialize data and send back a single response
-            //Data should be a .ply or .xyz file need further understanding how to do this
-            crow::json::wvalue combinedData;
-            combinedData["message"] = "Data processed successfully";
-            combinedData["status"] = "success";
+		//Testing filepath
+		std::ifstream file(filePath);
+		if (!file.is_open()) {
+			res.body = "Error while opening the file";
+			return res;
+		}
 
-            //Initialize Response
-            crow::response res(combinedData);
+		//reading Filepath
+		std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
-            //Headers:
-            res.add_header("Access-Control-Allow-Origin", "*");
-            
-            return res;
-            });
+		//Setting up Response
+		res.set_header("Content-Type", mimeType);
 
-    //Pre Cors Handler needed for the Post request
-    CROW_ROUTE(app, "/processData").methods("OPTIONS"_method)
-        ([](const crow::request& req) {
-            crow::response res;
+		//Headers:
+		res.add_header("Access-Control-Allow-Origin", "*");
 
-            //Headers:
-            res.add_header("Access-Control-Allow-Origin", "*");
+		res.body = fileContent;
+		return res;
+			});
 
-            return res;
-            });
+	//Merge Handler send back data recieved? or fully merged Data
+	CROW_ROUTE(app, "/processData")
+		.methods("POST"_method)
+		([](const crow::request& req) {
+		// Parse JSON data from the request body
+		crow::json::rvalue data2Combine;
 
-    //Starts the server
-    app.port(18080).multithreaded().run();
+		//Test if the send object is a Json Obj
+		try {
+			data2Combine = crow::json::load(req.body);
+		}
+		catch (const std::exception& e) {
+			return crow::response(400);
+		}
+
+		// Process the received data
+		//split into file 1, file 2, file 1 points picked and file 2 points picked (or points picked are one file?)
+		std::cout << "Received data 1: " << data2Combine["data1"].s() << std::endl;
+		std::cout << "Received data 2: " << data2Combine["data2"].s() << std::endl;
+		std::cout << "Received data 3: " << data2Combine["data3"].s() << std::endl;
+
+		//initialize data and send back a single response
+		//Data should be a .ply or .xyz file need further understanding how to do this
+		crow::json::wvalue combinedData;
+		combinedData["message"] = "Data processed successfully";
+		combinedData["status"] = "success";
+
+		//Initialize Response
+		crow::response res(combinedData);
+
+		//Headers:
+		res.add_header("Access-Control-Allow-Origin", "*");
+
+		return res;
+			});
+
+	//Pre Cors Handler needed for the Post request
+	CROW_ROUTE(app, "/processData").methods("OPTIONS"_method)
+		([](const crow::request& req) {
+		crow::response res;
+
+		//Headers:
+		res.add_header("Access-Control-Allow-Origin", "*");
+
+		return res;
+			});
+
+	//Starts the server
+	app.port(18080).multithreaded().run();
 }
