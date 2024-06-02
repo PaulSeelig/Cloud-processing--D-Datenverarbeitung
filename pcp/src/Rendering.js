@@ -15,15 +15,10 @@ let pointer, INTERSECTED;
 function onPointerClick(event) {
     pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
     pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
- }
- /**
-  * Thats a lot to comment on... will be done later
-  * @param {any} file
-  * @param {any} canvas
-  */
-function RenderFileOnCanvas(file, canvas)
-{
-    
+}
+
+function RenderFileOnCanvas(file, canvas) {
+
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas, alpha: true });
     renderer.setClearColor(0x000000, 0);
     const { scene, camera } = AddScene();
@@ -34,13 +29,12 @@ function RenderFileOnCanvas(file, canvas)
     const pointsize = canvas.parentNode.querySelector('.pointsize');
     const pointclr = canvas.parentNode.querySelector('[name="colors"]');
     const rotate = canvas.parentNode.querySelector('[name="rotate"]');
-    //const raycaster = new THREE.Raycaster();
-    //const pointer = new THREE.Vector2();
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
     document.addEventListener('pointermove', onPointerClick);
     const PointsMaterial = new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 500000 });
     reader.readAsDataURL(file);
-    reader.onload = (e) =>
-    {
+    reader.onload = (e) => {
         if (file.name.endsWith('.ply')) {
             new PLYLoader().load(e.target.result,
                 function (e) {
@@ -68,15 +62,14 @@ function RenderFileOnCanvas(file, canvas)
                     scene.add(D3_Mesh);
                 },
                 undefined,
-                function (error) { console.error(error) }
+                function (error) { console.error(error); }
             );
         }
-        else {return console.error("something went wrong") }
+        else { return console.error("Not supported file") }
         pointsize.addEventListener("input", function () { D3_Mesh.material.size = pointsize.value / 500000 });
         pointclr.addEventListener("input", function () { D3_Mesh.material.color = new THREE.Color(pointclr.value) });// CreatePointsMaterial() });
     }
-    function resizeRendererToDisplaySize(renderer)
-    {
+    function resizeRendererToDisplaySize(renderer) {
         renderer.clear(true, true);
         const canvas = renderer.domElement.parentNode;
         const width = canvas.clientWidth;
@@ -87,16 +80,14 @@ function RenderFileOnCanvas(file, canvas)
         }
         return needResize;
     }
-    function render(time)
-    {
-        if (resizeRendererToDisplaySize(renderer))
-        {
+    function render(time) {
+        if (resizeRendererToDisplaySize(renderer)) {
             renderer.clear(true, true);
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
             camera.updateProjectionMatrix();
         }
-        
+
         controls.update();
         //raycaster.params.Points.threshold = 0.1;
         //raycaster.setFromCamera(pointer, camera);

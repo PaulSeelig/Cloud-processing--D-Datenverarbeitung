@@ -40,7 +40,7 @@ int main()
 					std::string fileContent = part.body;
 
 					// Validate if the file content is a valid PLY file
-					if (!isValidPLY(fileContent)) {
+					if (!false) {
 						return crow::response(400, "Invalid PLY file");
 					}
 
