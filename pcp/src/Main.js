@@ -110,19 +110,26 @@ function AddView(combineFile) {
  */
 async function ImportFile(eventtarget) {
     if (eventtarget.files.length > 0) {
-        const file = eventtarget.files[0];
-        const graParent = eventtarget.parentNode.parentNode;
-        visualFile(graParent, file);
-        // Modified By Audrik --- 
-        try {
-            const response = await scanService.Import3dScan(file);
-            console.log('File successfully uploaded and validated:', response);
-            AddToDialog(`File successfully uploaded and validated`);
+            const file = eventtarget.files[0];
+            var fileEnd = '.' + file.name.split(".").at(-1);
+            if (fileEnd == '.ply' || fileEnd == '.stl' || fileEnd == '.xyz') {
+                const graParent = eventtarget.parentNode.parentNode;
+                visualFile(graParent, file)
+                // Modified By Audrik --- 
+                try {
+                    const response = await scanService.Import3dScan(file);
+                    console.log('File successfully uploaded and validated:', response);
+                    AddToDialog(`File successfully uploaded and validated`);
 
-        } catch (error) {
-            console.error('Error uploading file:', error);
-            AddToDialog(`Error uploading file: ${error.message}`);
-        }
+                } catch (error) {
+                    console.error('Error uploading file:', error);
+                    AddToDialog(`Error uploading file: ${error.message}`);
+                }
+                //
+            }
+            else {
+                AddToDialog('this doesn\'t seem to be the correct format. ... We\'re not supporting ' + fileEnd + '-formated files... we only work with .ply .xyz & .stl -formats for now');
+            }
     }
 }
 
