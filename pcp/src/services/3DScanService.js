@@ -1,97 +1,70 @@
-import * as THREE from 'three';
-import { Point, Model3D } from '../models/model3d';
-
-class Scan3DService {
-    constructor() {
-        this.model = new Model3D();
+class ScanService {
+    constructor(baseUrl) {
+        this.baseUrl = baseUrl;
     }
 
-    async load3DScan(file) {
+    async Import3dScan(fileContent) {
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('File', fileContent);
 
-        const response = await fetch('/api/load3dscan', {
+        const response = await fetch(`${this.baseUrl}/Import3dScan`, {
             method: 'POST',
             body: formData
         });
+        console.log(response)
 
         if (!response.ok) {
-            throw new Error('Failed to load 3D scan');
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        const data = await response.text();
-        this.parsePoints(data);
-        return this.model;
+        return "Good File";
     }
 
-    parsePoints(data) {
-        const lines = data.trim().split('\n');
-        lines.forEach(line => {
-            const [x, y, z] = line.split(' ').map(Number);
-            this.model.addPoint(x, y, z);
-        });
-    }
+    async merge3DScans(files) {
 
-    async export3DScan(file1, file2) {
-        const formData = new FormData();
-        formData.append('file1', file1);
-        formData.append('file2', file2);
-
-        const response = await fetch('/api/export3dscan', {
+        console.log(files)
+        const response = await fetch(`${this.baseUrl}/merge3DScans`, {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json',
+
+            },
+            body: JSON.stringify({ files: files })
+        });
+        console.log(response)
+
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        return response.json();
+    }
+
+    async export3DScan(points) {
+        const response = await fetch(`${this.baseUrl}/export3DScan`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ points })
         });
 
         if (!response.ok) {
-            throw new Error('Failed to export 3D scan');
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        const data = await response.text();
-        const combinedModel = new Model3D();
-        const lines = data.trim().split('\n');
-        lines.forEach(line => {
-            const [x, y, z] = line.split(' ').map(Number);
-            combinedModel.addPoint(x, y, z);
-        });
-
-        return combinedModel;
-    }
-
-    visualize3DScan(container) {
-        const points = this.model.getPoints().map(point => new THREE.Vector3(point.x, point.y, point.z));
-
-        // Remove existing canvas if any
-        const existingCanvas = container.querySelector('canvas');
-        if (existingCanvas) {
-            container.removeChild(existingCanvas);
-        }
-
-        // Create scene, camera, and renderer
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        container.appendChild(renderer.domElement);
-
-        // Create geometry and material for the points
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const material = new THREE.PointsMaterial({ color: 0xff0000, size: 0.1 });
-        const pointCloud = new THREE.Points(geometry, material);
-
-        // Add point cloud to the scene
-        scene.add(pointCloud);
-
-        // Position the camera
-        camera.position.z = 50;
-
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-
-        animate();
+        const blob = await response.blob();  // Get the response as a blob
+        const url = window.URL.createObjectURL(blob);  // Create a URL for the blob
+        const a = document.createElement('a');  // Create an <a> element
+        a.href = url;
+        a.download = "exported_scan.ply";  // Set the default filename for the download
+        document.body.appendChild(a);
+        a.click();  // Simulate a click on the <a> element
+        a.remove();  // Remove the <a> element from the document
+        window.URL.revokeObjectURL(url);  // Clean up the URL object
     }
 }
 
-export default Scan3DService;
+
+export default ScanService;
