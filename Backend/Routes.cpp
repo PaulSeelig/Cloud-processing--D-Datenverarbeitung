@@ -46,7 +46,6 @@ int main()
 						return crow::response(400, "Invalid PLY file");
 					}*/
 					crow::response res(200, fileContent);
-					res.
 					res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
 					// If valid, return the file content back
 					return res;
