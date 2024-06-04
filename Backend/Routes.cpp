@@ -82,7 +82,9 @@ int main()
 		//Crow Response
 		crow::json::wvalue response;
 		response["message"] = "not implemented yet";
+
 		crow::response res(response);
+		res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
 		return res;
 			});
 
@@ -111,7 +113,7 @@ int main()
 		res.set_header("Content-Type", mimeType);
 
 		//Headers:
-		res.add_header("Access-Control-Allow-Origin", "*");
+		res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
 
 		res.body = fileContent;
 		return res;
@@ -148,7 +150,7 @@ int main()
 		crow::response res(combinedData);
 
 		//Headers:
-		res.add_header("Access-Control-Allow-Origin", "*");
+		res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
 
 		return res;
 			});
@@ -159,7 +161,7 @@ int main()
 		crow::response res;
 
 		//Headers:
-		res.add_header("Access-Control-Allow-Origin", "*");
+		res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
 
 		return res;
 			});
