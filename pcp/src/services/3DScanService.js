@@ -3,7 +3,7 @@ class ScanService {
         this.baseUrl = baseUrl;
     }
 
-    async Import3dScan(fileContent) {
+    async Import3dScan(fileContent) {      
         const formData = new FormData();
         formData.append('File', fileContent);
 
@@ -11,13 +11,14 @@ class ScanService {
             method: 'POST',
             body: formData
         });
-        console.log(response)
+        //console.log(response.body);
+        //console.log(response.text())
 
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
 
-        return "Good File";
+        return response;
     }
 
     async merge3DScans(files) {

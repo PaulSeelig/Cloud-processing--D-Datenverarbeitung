@@ -19,12 +19,14 @@ int main()
 	//App
 	crow::SimpleApp app;
 	//Logger for debugging
-	app.loglevel(crow::LogLevel::Debug);
+	app.loglevel(crow::LogLevel::Info);
 
 
 	//Code Audrik ------------------------
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
 		[](const crow::request& req) {
+
+			
 			// Get the content type from the request header
 			std::string content_type = req.get_header_value("Content-Type");
 
@@ -40,12 +42,14 @@ int main()
 					std::string fileContent = part.body;
 
 					// Validate if the file content is a valid PLY file
-					if (!false) {
+				/*	if (!false) {
 						return crow::response(400, "Invalid PLY file");
-					}
-
+					}*/
+					crow::response res(200, fileContent);
+					res.
+					res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
 					// If valid, return the file content back
-					return crow::response(200, fileContent);
+					return res;
 				}
 
 				// If "File" part not found, return error response
@@ -100,7 +104,6 @@ int main()
 			res.body = "Error while opening the file";
 			return res;
 		}
-
 		//reading Filepath
 		std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 

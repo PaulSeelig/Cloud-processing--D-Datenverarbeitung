@@ -12,10 +12,10 @@ const PARTICLE_SIZE = 20;
 
 let raycaster, intersects;
 let pointer, INTERSECTED;
-function onPointerClick(event) {
-    pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-    pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
-}
+//function onPointerClick(event) {
+//    pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+//    pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
+//}
 
 function RenderFileOnCanvas(file, canvas) {
 
@@ -31,7 +31,7 @@ function RenderFileOnCanvas(file, canvas) {
     const rotate = canvas.parentNode.querySelector('[name="rotate"]');
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
-    document.addEventListener('pointermove', onPointerClick);
+    //document.addEventListener('pointermove', onPointerClick);
     const PointsMaterial = new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 500000 });
     reader.readAsDataURL(file);
     reader.onload = (e) => {
@@ -118,7 +118,7 @@ function RenderFileOnCanvas(file, canvas) {
 
         if (rotate.checked) { scene.rotation.z = 0.00025 * time; }
 
-        canvas.addEventListener('pointerchange', onPointerClick);
+        //canvas.addEventListener('pointerchange', onPointerClick);
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
