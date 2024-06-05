@@ -146,7 +146,14 @@ async function ImportFile(eventtarget) {
 
 function visualFile(objView, files) {
     //const files = filetwo? [file, filetwo] : [file]
-    objView.title = files.length < 2? files[0].name : "CombineView: " + files[0].name + " + " + files[1].name;
+    objView.title = files.length < 2 ? files[0].name : "CombineView: " + files[0].name + " + " + files[1].name;
+    for (let i = 0; i < files.length - 1; i++) {
+        const optionmenuContent = objView.querySelector('.option-menu');
+        const before = optionmenuContent.childNodes[5];
+        optionmenuContent.insertBefore(optionmenuContent.querySelector('.rotateBtn').cloneNode(true), before);
+        optionmenuContent.insertBefore(optionmenuContent.querySelector('.color').cloneNode(true), before);
+        optionmenuContent.insertBefore(optionmenuContent.querySelector('.pointsize').cloneNode(true), before);
+    }
     const canvas = objView.querySelector('canvas');
     objView.querySelector('.hint').classList.add("hidden");
     files.onload = RenderFileOnCanvas(files, canvas);
