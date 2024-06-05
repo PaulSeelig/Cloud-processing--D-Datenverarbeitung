@@ -41,7 +41,16 @@ function SaveFile() {
     AddToDialog("Uuuuhm... Nothing there to save...")
 }
 async function Combine() {
-    AddToDialog("Not Implemented Yet ...")
+    const dragelements = document.querySelectorAll('.dragndrop');
+    const files = [];
+    for (const drgndrpelement of dragelements) {
+        files.push(drgndrpelement.files[0]);
+        MiniView(drgndrpelement)
+    }
+
+    AddView(files);
+
+    AddToDialog("Not fully Implemented Yet ... As u can c")
 }
 /**
  * Adds EventListener to new Buttons, when new ViewWindow is created.
@@ -79,17 +88,17 @@ function MiniView(evlement) {
  * if combineFile is a file and not null, it will be displayed in the new viewWindow
  * @param {any} combineFile
  */
-function AddView(combineFile) {
+function AddView(combineFiles) {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
     var winCount = viewcont.childElementCount;
-    if (winCount < MaxWindows || combineFile) {
+    if (winCount < MaxWindows || combineFiles) {
         if (winCount == 1) {
             viewcont.querySelector('.closeBtn').classList.remove("not_accessible");
             viewcont.querySelector('.miniBtn').classList.remove("not_accessible");
         }
         const viewclone = clone.cloneNode(true);
-        if (combineFile) {
-            visualFile(viewclone, combineFile);
+        if (combineFiles) {
+            visualFile(viewclone, combineFiles);
         }
         viewcont.appendChild(viewclone);
         AssignBtns();
@@ -110,19 +119,20 @@ function AddView(combineFile) {
  */
 async function ImportFile(eventtarget) {
     if (eventtarget.files.length > 0) {
-            const file = eventtarget.files[0];
-            var fileEnd = '.' + file.name.split(".").at(-1);
+            const file = [eventtarget.files[0]];
+            var fileEnd = '.' + file[0].name.split(".").at(-1);
             if (fileEnd == '.ply' || fileEnd == '.stl' || fileEnd == '.xyz') {
                 const graParent = eventtarget.parentNode.parentNode;
                 visualFile(graParent, file)
                 // Modified By Audrik --- 
                 try {
-                    const response = await scanService.Import3dScan(file);
+                    const response = await scanService.Import3dScan(file[0]);
                     console.log('File successfully uploaded and validated:', response);
                     AddToDialog(`File successfully uploaded and validated`);
                     const text = await response.text(); // Hier wird der Text korrekt ausgelesen
                     console.log(text);
-                } catch (error) {
+                }
+                catch (error) {
                     console.error('Error uploading file:', error);
                     AddToDialog(`Error uploading file: ${error.message}`);
                 }
@@ -134,11 +144,12 @@ async function ImportFile(eventtarget) {
     }
 }
 
-function visualFile(objView, file) {
-    objView.title = file.name;
+function visualFile(objView, files) {
+    //const files = filetwo? [file, filetwo] : [file]
+    objView.title = files.length < 2? files[0].name : "CombineView: " + files[0].name + " + " + files[1].name;
     const canvas = objView.querySelector('canvas');
     objView.querySelector('.hint').classList.add("hidden");
-    file.onload = RenderFileOnCanvas(file, canvas);
+    files.onload = RenderFileOnCanvas(files, canvas);
 }
 /**
  * takes a string or similar and displays it in the website

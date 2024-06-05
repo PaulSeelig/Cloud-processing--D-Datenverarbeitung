@@ -17,7 +17,7 @@ let pointer, INTERSECTED;
 //    pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
 //}
 
-function RenderFileOnCanvas(file, canvas) {
+function RenderFileOnCanvas(files, canvas,) {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas, alpha: true });
     renderer.setClearColor(0x000000, 0);
@@ -25,49 +25,52 @@ function RenderFileOnCanvas(file, canvas) {
 
     const controls = new OrbitControls(camera, renderer.domElement);
     var D3_Mesh = new THREE.Points();
-    const reader = new FileReader();
     const pointsize = canvas.parentNode.querySelector('.pointsize');
     const pointclr = canvas.parentNode.querySelector('[name="colors"]');
     const rotate = canvas.parentNode.querySelector('[name="rotate"]');
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
     //document.addEventListener('pointermove', onPointerClick);
-    const PointsMaterial = new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 500000 });
-    reader.readAsDataURL(file);
-    reader.onload = (e) => {
-        if (file.name.endsWith('.ply')) {
-            new PLYLoader().load(e.target.result,
-                function (e) {
-                    D3_Mesh = new THREE.Points(e.center(), PointsMaterial);
-                    scene.add(D3_Mesh);
-                },
-                undefined,
-                function (error) { console.error(error); }
-            );
+    for (const file of files) {
+
+        const reader = new FileReader();
+        const PointsMaterial = new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 500000 });
+        reader.readAsDataURL(file);
+        reader.onload = (e) => {
+            if (file.name.endsWith('.ply')) {
+                new PLYLoader().load(e.target.result,
+                    function (e) {
+                        D3_Mesh = new THREE.Points(e.center(), PointsMaterial);
+                        scene.add(D3_Mesh);
+                    },
+                    undefined,
+                    function (error) { console.error(error); }
+                );
+            }
+            else if (file.name.endsWith('.xyz')) {
+                new XYZLoader().load(e.target.result,
+                    function (e) {
+                        D3_Mesh = new THREE.Points(e.center(), PointsMaterial);
+                        scene.add(D3_Mesh);
+                    },
+                    undefined,
+                    function (error) { console.error(error); }
+                );
+            }
+            else if (file.name.endsWith('.stl')) {
+                new STLLoader().load(e.target.result,
+                    function (e) {
+                        D3_Mesh = new THREE.Points(e.center(), PointsMaterial);
+                        scene.add(D3_Mesh);
+                    },
+                    undefined,
+                    function (error) { console.error(error); }
+                );
+            }
+            else { return console.error("Not supported file") }
+            pointsize.addEventListener("input", function () { D3_Mesh.material.size = pointsize.value / 500000 });
+            pointclr.addEventListener("input", function () { D3_Mesh.material.color = new THREE.Color(pointclr.value) });// CreatePointsMaterial() });
         }
-        else if (file.name.endsWith('.xyz')) {
-            new XYZLoader().load(e.target.result,
-                function (e) {
-                    D3_Mesh = new THREE.Points(e.center(), PointsMaterial);
-                    scene.add(D3_Mesh);
-                },
-                undefined,
-                function (error) { console.error(error); }
-            );
-        }
-        else if (file.name.endsWith('.stl')) {
-            new STLLoader().load(e.target.result,
-                function (e) {
-                    D3_Mesh = new THREE.Points(e.center(), PointsMaterial);
-                    scene.add(D3_Mesh);
-                },
-                undefined,
-                function (error) { console.error(error); }
-            );
-        }
-        else { return console.error("Not supported file") }
-        pointsize.addEventListener("input", function () { D3_Mesh.material.size = pointsize.value / 500000 });
-        pointclr.addEventListener("input", function () { D3_Mesh.material.color = new THREE.Color(pointclr.value) });// CreatePointsMaterial() });
     }
     function resizeRendererToDisplaySize(renderer) {
         renderer.clear(true, true);
