@@ -21,6 +21,10 @@ int main()
 	//Logger for debugging
 	app.loglevel(crow::LogLevel::Info);
 
+	//Point Clouds where the imported Data gets Saved, can then be deleted with the /delete3DFiles endpoint
+	pcl::PointCloud<pcl::PointXYZ>::Ptr source_points(new pcl::PointCloud<pcl::PointXYZ>());
+	pcl::PointCloud<pcl::PointXYZ>::Ptr target_points(new pcl::PointCloud<pcl::PointXYZ>());
+
 
 	//Code Audrik ------------------------
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
@@ -63,106 +67,86 @@ int main()
 	);
 	//--------------------------
 
-	//Export 3D Data conversion Handler
-	CROW_ROUTE(app, "/export")
-		.methods("POST"_method)
-		([](const crow::request& req) {
-		//This will be where the code to deciver the incoming Data
-		//recieved json data (if thats how we are doing it)
-		crow::json::rvalue recievedData;
 
-		//test to see if its a json object
-		try {
-			recievedData = crow::json::load(req.body);
-		}
-		catch (const std::exception& e) {
-			return crow::response(400); //wrong data type
-		}
+	//Delete Handler to delete saved point clouds
+	CROW_ROUTE(app, "/delete3DFiles").methods(crow::HTTPMethod::Delete)
+		([](const crow::request& req)
+		{
+				return crow::response(400, "Not implemented yet");
+		});
 
-		//Crow Response
-		crow::json::wvalue response;
-		response["message"] = "not implemented yet";
-		crow::response res(response);
-		return res;
-			});
+	//ICP Handler sends back a 4x4 transformation Matrix
+	CROW_ROUTE(app, "/mergeImportedFiles").methods("POST"_method)
+		([](const crow::request& req) 
+		{
+			//This will be where the code to deciver the incoming Data
+			//recieved json data (if thats how we are doing it)
+			crow::json::rvalue recievedData;
 
-	//Get request for merged Data
-	CROW_ROUTE(app, "/mergedData")
-		([&]() {
-		//The Content type differs for xyz, ply or stl (for testing purposes its allways "application/octet-stream")
-		std::string mimeType = "chemical/x-xyz";
+			//test to see if its a json object
+			try {
+				recievedData = crow::json::load(req.body);
+			}
+			catch (const std::exception& e) {
+				return crow::response(400); //wrong data type
+			}
 
-		//Filepath might be needed if we temporarily store all merged data
-		std::string filePath = "C:\\Users\\tn\\source\\repos\\team-5-cloud-processing-gfai-3d-datenverarbeitung\\Models\\beethoven_2.xyz";
-
-		//Crow response initialisation
-		crow::response res;
-
-		//Testing filepath
-		std::ifstream file(filePath);
-		if (!file.is_open()) {
-			res.body = "Error while opening the file";
+			//Crow Response
+			crow::json::wvalue response;
+			response["message"] = "not implemented yet";
+			crow::response res(response);
+			res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
 			return res;
-		}
-		//reading Filepath
-		std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+		});
 
-		//Setting up Response
-		res.set_header("Content-Type", mimeType);
 
-		//Headers:
-		res.add_header("Access-Control-Allow-Origin", "*");
+	//Pointpicking Handler sends back a 4x4 transformation Matrix
+	CROW_ROUTE(app, "/pointsPicked").methods(crow::HTTPMethod::POST)
+		([](const crow::request& req) 
+		{
+			// Parse JSON data from the request body
+			crow::json::rvalue data2Combine;
 
-		res.body = fileContent;
-		return res;
-			});
+			//Test if the send object is a Json Obj
+			try {
+				data2Combine = crow::json::load(req.body);
+			}
+			catch (const std::exception& e) {
+				return crow::response(400);
+			}
 
-	//Merge Handler send back data recieved? or fully merged Data
-	CROW_ROUTE(app, "/processData")
-		.methods("POST"_method)
-		([](const crow::request& req) {
-		// Parse JSON data from the request body
-		crow::json::rvalue data2Combine;
+			// Process the received data
+			//split into file 1, file 2, file 1 points picked and file 2 points picked (or points picked are one file?)
+			std::cout << "Received data 1: " << data2Combine["data1"].s() << std::endl;
+			std::cout << "Received data 2: " << data2Combine["data2"].s() << std::endl;
+			std::cout << "Received data 3: " << data2Combine["data3"].s() << std::endl;
 
-		//Test if the send object is a Json Obj
-		try {
-			data2Combine = crow::json::load(req.body);
-		}
-		catch (const std::exception& e) {
-			return crow::response(400);
-		}
+			//initialize data and send back a single response
+			//Data should be a .ply or .xyz file need further understanding how to do this
+			crow::json::wvalue combinedData;
+			combinedData["message"] = "Data processed successfully";
+			combinedData["status"] = "success";
 
-		// Process the received data
-		//split into file 1, file 2, file 1 points picked and file 2 points picked (or points picked are one file?)
-		std::cout << "Received data 1: " << data2Combine["data1"].s() << std::endl;
-		std::cout << "Received data 2: " << data2Combine["data2"].s() << std::endl;
-		std::cout << "Received data 3: " << data2Combine["data3"].s() << std::endl;
+			//Initialize Response
+			crow::response res(combinedData);
 
-		//initialize data and send back a single response
-		//Data should be a .ply or .xyz file need further understanding how to do this
-		crow::json::wvalue combinedData;
-		combinedData["message"] = "Data processed successfully";
-		combinedData["status"] = "success";
+			//Headers:
+			res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
 
-		//Initialize Response
-		crow::response res(combinedData);
-
-		//Headers:
-		res.add_header("Access-Control-Allow-Origin", "*");
-
-		return res;
-			});
+			return res;
+		});
 
 	//Pre Cors Handler needed for the Post request
-	CROW_ROUTE(app, "/processData").methods("OPTIONS"_method)
-		([](const crow::request& req) {
-		crow::response res;
+	CROW_ROUTE(app, "/processData").methods(crow::HTTPMethod::OPTIONS)
+		([](const crow::request& req) 
+		{
+			crow::response res;
 
-		//Headers:
-		res.add_header("Access-Control-Allow-Origin", "*");
+			//Headers:
+			res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
 
-		return res;
-			});
+			return res;
+		});
 
 	//Starts the server
 	app.port(18080).multithreaded().run();
