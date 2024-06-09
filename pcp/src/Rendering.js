@@ -3,21 +3,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { XYZLoader } from 'three/addons/loaders/XYZLoader.js';
 import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
-import Stats from 'three/addons/libs/stats.module.js';
+//import Stats from 'three/addons/libs/stats.module.js';
 
 import AddScene from './AddScene';
-
-
-//let particles;
-
-//const PARTICLE_SIZE = 20;
-
-//let raycaster, intersects;
-//let pointer, INTERSECTED;
-const color = new THREE.Color();
-const white = new THREE.Color().setHex(0xffffff);
-
-
 
 function RenderFileOnCanvas(files, canvas,) {
 
@@ -27,18 +15,15 @@ function RenderFileOnCanvas(files, canvas,) {
 
     const controls = new OrbitControls(camera, renderer.domElement);
     var D3_Mesh = null;
-    //var PickPoint1 = new THREE.Sphere(new );
-    var P1 = new THREE.Mesh(new THREE.SphereGeometry(10, 10, 10), new THREE.MeshBasicMaterial({ color: 0x329044 }));
-
-    var P2 = new THREE.Mesh(new THREE.SphereGeometry(10, 10, 10), new THREE.MeshBasicMaterial({ color: 0x329044 }));
-
-    var P3 = new THREE.Mesh(new THREE.SphereGeometry(10, 10, 10), new THREE.MeshBasicMaterial({ color: 0x329044 }));
-
+    const pointsize = canvas.parentNode.querySelector('.pointsize');
+    const pointclr = canvas.parentNode.querySelector('[name="colors"]');
+    var P1 = new THREE.Mesh(new THREE.SphereGeometry(1 + pointsize.value  / 500000, 1, 1), new THREE.MeshBasicMaterial({ color: 0x3d9044 }));
+    var P2 = new THREE.Mesh(new THREE.SphereGeometry(1 + pointsize.value  / 500000, 1, 1), new THREE.MeshBasicMaterial({ color: 0x32f044 }));
+    var P3 = new THREE.Mesh(new THREE.SphereGeometry(1 + pointsize.value  / 500000, 1, 1), new THREE.MeshBasicMaterial({ color: 0x3290e4 }));
     scene.add(P1);
     scene.add(P2);
     scene.add(P3);
-    const pointsize = canvas.parentNode.querySelector('.pointsize');
-    const pointclr = canvas.parentNode.querySelector('[name="colors"]');
+    var PCounter = 1;
     const rotate = canvas.parentNode.querySelector('[name="rotate"]');
     const raycaster = new THREE.Raycaster();
     raycaster.params.Points.threshold = 0.1
@@ -48,10 +33,23 @@ function RenderFileOnCanvas(files, canvas,) {
         const rect = canvas.getBoundingClientRect();
         pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-   
+        function SetPoints(P, intersect)
+        {
+            P.position.copy(intersect.point);
+            PCounter++;
+       
+        }
+        if (D3_Mesh) {
+            raycaster.setFromCamera(pointer, camera);
+            const intersects = raycaster.intersectObject(D3_Mesh);
+            if (intersects.length > 0) {
+                const intersect = intersects[0];
+                console.info(intersect.point);
+                PCounter == 1 ? SetPoints(P1, intersect) : PCounter == 2 ? SetPoints(P2, intersect) : PCounter == 3 ? SetPoints(P3, intersect) : SetPoints(P4, intersect);
+            }
+        }
     }
 
-    canvas.addEventListener('pointerclick', onPointerClick);
     //document.addEventListener('pointermove', onPointerClick);
     for (const file of files) {
 
@@ -113,18 +111,7 @@ function RenderFileOnCanvas(files, canvas,) {
         controls.update();
         raycaster.setFromCamera(pointer, camera);
 
-        if (D3_Mesh) {
-            const intersects = raycaster.intersectObject(D3_Mesh);
-            if (intersects.length > 0) {
-                const intersect = intersects[0];
-                console.info(intersect.point);
-                P1.position.x = intersect.point.x;
 
-                P1.position.y = intersect.point.y;
-
-                P1.position.z = intersect.point.z;
-            }
-        }
         
         renderer.render(scene, camera);
 
@@ -132,6 +119,8 @@ function RenderFileOnCanvas(files, canvas,) {
 
         requestAnimationFrame(render);
     }
+
+    canvas.addEventListener('click', onPointerClick);
     requestAnimationFrame(render);
 }
 export default RenderFileOnCanvas;
