@@ -130,7 +130,7 @@ async function ImportFile(eventtarget) {
                     console.log('File successfully uploaded and validated:', response);
                     AddToDialog(`File successfully uploaded and validated`);
                     const text = await response.text(); // Hier wird der Text korrekt ausgelesen
-                    console.log(text);
+                    //console.log(text);
                 }
                 catch (error) {
                     console.error('Error uploading file:', error);
