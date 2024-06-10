@@ -41,12 +41,22 @@ function SaveFile() {
     AddToDialog("Uuuuhm... Nothing there to save...")
 }
 async function Combine() {
-    const dragelements = document.querySelectorAll('.dragndrop');
+
+    const dragelements = document.querySelectorAll('[type="file"]');
     const files = [];
-    for (const drgndrpelement of dragelements) {
-        files.push(drgndrpelement.files[0]);
-        MiniView(drgndrpelement)
+    const PickPoints = [];
+    for (const drgndrpelement of dragelements)
+    {
+        const view = drgndrpelement.parentNode.parentNode;
+        const canvas = view.querySelector('canvas');
+        if (drgndrpelement.files[0] && canvas.textContent != '')
+        {
+            files.push(drgndrpelement.files[0]);
+            PickPoints.push(canvas.textContent);
+            MiniView(drgndrpelement);
+        }
     }
+    AddToDialog(PickPoints)
 
     AddView(files);
 

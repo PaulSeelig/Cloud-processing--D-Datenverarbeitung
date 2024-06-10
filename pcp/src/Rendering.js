@@ -6,7 +6,6 @@ import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 //import Stats from 'three/addons/libs/stats.module.js';
 
 import AddScene from './AddScene';
-
 function RenderFileOnCanvas(files, canvas,) {
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas, alpha: true });
@@ -17,9 +16,10 @@ function RenderFileOnCanvas(files, canvas,) {
     var D3_Mesh = null;
     const pointsize = canvas.parentNode.querySelector('.pointsize');
     const pointclr = canvas.parentNode.querySelector('[name="colors"]');
-    var P1 = new THREE.Mesh(new THREE.SphereGeometry(1 + pointsize.value  / 500000, 1, 1), new THREE.MeshBasicMaterial({ color: 0x3d9044 }));
-    var P2 = new THREE.Mesh(new THREE.SphereGeometry(1 + pointsize.value  / 500000, 1, 1), new THREE.MeshBasicMaterial({ color: 0x32f044 }));
-    var P3 = new THREE.Mesh(new THREE.SphereGeometry(1 + pointsize.value  / 500000, 1, 1), new THREE.MeshBasicMaterial({ color: 0x3290e4 }));
+    function NewPoint(colour) { return new THREE.Mesh(new THREE.SphereGeometry(1 + pointsize.value / 500000, 1, 1), new THREE.MeshBasicMaterial({ color: colour })); }
+    var P1 = NewPoint(0x3d9044);
+    var P2 = NewPoint(0x32f044);
+    var P3 = NewPoint(0x3290e4);
     scene.add(P1);
     scene.add(P2);
     scene.add(P3);
@@ -37,7 +37,8 @@ function RenderFileOnCanvas(files, canvas,) {
         {
             P.position.copy(intersect.point);
             PCounter++;
-       
+            canvas.textContent = PCounter > 3 ? JSON.stringify(P1.position) + JSON.stringify(P2.position) + JSON.stringify(P3.position): '';
+            //console.info(canvas.textContent);
         }
         if (D3_Mesh) {
             raycaster.setFromCamera(pointer, camera);
@@ -45,7 +46,7 @@ function RenderFileOnCanvas(files, canvas,) {
             if (intersects.length > 0) {
                 const intersect = intersects[0];
                 console.info(intersect.point);
-                PCounter == 1 ? SetPoints(P1, intersect) : PCounter == 2 ? SetPoints(P2, intersect) : PCounter == 3 ? SetPoints(P3, intersect) : SetPoints(P4, intersect);
+                PCounter == 1 ? SetPoints(P1, intersect) : PCounter == 2 ? SetPoints(P2, intersect) : PCounter == 3 ? SetPoints(P3, intersect): "";
             }
         }
     }
