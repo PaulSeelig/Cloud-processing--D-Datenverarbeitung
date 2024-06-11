@@ -70,9 +70,19 @@ int main()
 
 	//Delete Handler to delete saved point clouds
 	CROW_ROUTE(app, "/delete3DFiles").methods(crow::HTTPMethod::Delete)
-		([](const crow::request& req)
+		([&source_points, &target_points](const crow::request& req)
 		{
-				return crow::response(400, "Not implemented yet");
+				//deletes
+				source_points->clear();
+				target_points->clear();
+				
+				//checks if deleting was succesful and sends back the appropriete response
+				if (source_points->points.empty() && target_points->points.empty()) {
+					return crow::response("Point Clouds have been deleted");
+				}
+				else {
+					return crow::response("Error while deleting");
+				}
 		});
 
 	//ICP Handler sends back a 4x4 transformation Matrix
@@ -90,6 +100,7 @@ int main()
 			catch (const std::exception& e) {
 				return crow::response(400); //wrong data type
 			}
+			//Logic goes here
 
 			//Crow Response
 			crow::json::wvalue response;
@@ -104,43 +115,39 @@ int main()
 	CROW_ROUTE(app, "/pointsPicked").methods(crow::HTTPMethod::POST)
 		([](const crow::request& req) 
 		{
-			// Parse JSON data from the request body
-			crow::json::rvalue data2Combine;
+			//Innitialization and subsequent conversion from Points picked to Pointclouds
+			crow::json::rvalue pickedPoints;
+
+			pcl::PointCloud<pcl::PointXYZ>::Ptr source_points(new pcl::PointCloud<pcl::PointXYZ>());
+			pcl::PointCloud<pcl::PointXYZ>::Ptr target_points(new pcl::PointCloud<pcl::PointXYZ>());
 
 			//Test if the send object is a Json Obj
 			try {
-				data2Combine = crow::json::load(req.body);
+				pickedPoints = crow::json::load(req.body);
 			}
 			catch (const std::exception& e) {
 				return crow::response(400);
 			}
+			//Here is where the filling of the pointclouds will happen
+			for (int i = 0; i < pickedPoints.size(); i++)
+			{
+				//to differentiate the 2 picked Points
+				if (((pickedPoints.size() - 1) / 2) > i) 
+				{
+					//how to extract the exact thingys -> pcl::PointXYZ(x,y,z); //float!
+					//logic goes here target_points->points.push_back();
+				}
+			}
+			//here is code to allign the 2 using SVD 
 
-			// Process the received data
-			//split into file 1, file 2, file 1 points picked and file 2 points picked (or points picked are one file?)
-			std::cout << "Received data 1: " << data2Combine["data1"].s() << std::endl;
-			std::cout << "Received data 2: " << data2Combine["data2"].s() << std::endl;
-			std::cout << "Received data 3: " << data2Combine["data3"].s() << std::endl;
-
-			//initialize data and send back a single response
-			//Data should be a .ply or .xyz file need further understanding how to do this
+			//initialize response
+			//response will be a 4x4 Matrix object probably converted to a json object
 			crow::json::wvalue combinedData;
 			combinedData["message"] = "Data processed successfully";
 			combinedData["status"] = "success";
 
 			//Initialize Response
 			crow::response res(combinedData);
-
-			//Headers:
-			res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
-
-			return res;
-		});
-
-	//Pre Cors Handler needed for the Post request
-	CROW_ROUTE(app, "/processData").methods(crow::HTTPMethod::OPTIONS)
-		([](const crow::request& req) 
-		{
-			crow::response res;
 
 			//Headers:
 			res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");

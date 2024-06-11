@@ -7,12 +7,19 @@
 ###Back-end
 for Windows:
 1. vcpkg for [Windows](https://github.com/microsoft/vcpkg?tab=readme-ov-file#quick-start-windows)
-2. .\vcpkg install crow
+2. .\vcpkg install Crow
 3. .\vcpkg install pcl
-4. profit
+4. start in visual studio 2022
 
-for Linux:
-may god help you jk will write when i have the time
+for Linux: 
+1. run git clone https://github.com/CrowCpp/Crow.git
+2. run $ sudo apt install libpcl-dev (Ubuntu/Debian)
+3. bash: /my_crow_project
+            /src
+                main.cpp
+            /include
+4. cp Crow/amalgamate/crow_all.h my_crow_project/include/
+5. replace the "crow.h" header to "crow_all.h" inside the backend.cpp
 
 
 ###Front-End
@@ -23,3 +30,5 @@ may god help you jk will write when i have the time
 > npm install --save three
 
 > npm install --save-dev vite
+
+3. start in visual studio 2022
