@@ -24,7 +24,7 @@ int main()
 	//Point Clouds where the imported Data gets Saved, can then be deleted with the /delete3DFiles endpoint
 	pcl::PointCloud<pcl::PointXYZ>::Ptr source_points(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr target_points(new pcl::PointCloud<pcl::PointXYZ>());
-
+	//PCD format?? -> put the files in here convert from stl, ply and xyz to pcd pottentially?
 
 	//Code Audrik ------------------------
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
@@ -46,10 +46,10 @@ int main()
 					std::string fileContent = part.body;
 
 					// Validate if the file content is a valid PLY file
-				/*	if (!false) {
+					/*	if (!false) {
 						return crow::response(400, "Invalid PLY file");
 					}*/
-					crow::response res(200, fileContent);
+					crow::response res(200, "Data recieved");
 					
 					res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
 					// If valid, return the file content back
@@ -76,6 +76,7 @@ int main()
 				source_points->clear();
 				target_points->clear();
 				
+				//clear the saved Data possible PCD
 				//checks if deleting was succesful and sends back the appropriete response
 				if (source_points->points.empty() && target_points->points.empty()) {
 					return crow::response("Point Clouds have been deleted");
