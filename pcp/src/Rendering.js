@@ -20,9 +20,12 @@ function RenderFileOnCanvas(files, canvas,) {
     var P1 = NewPoint(0x3d9044);
     var P2 = NewPoint(0x32f044);
     var P3 = NewPoint(0x3290e4);
-    scene.add(P1);
-    scene.add(P2);
-    scene.add(P3);
+    const PZero = NewPoint(0x000000)
+    const Points = new THREE.Object3D()
+    Points.add(P1);
+    Points.add(P2);
+    Points.add(P3);
+    scene.add(Points);
     var PCounter = 1;
     const rotate = canvas.parentNode.querySelector('[name="rotate"]');
     const raycaster = new THREE.Raycaster();
@@ -33,20 +36,46 @@ function RenderFileOnCanvas(files, canvas,) {
         const rect = canvas.getBoundingClientRect();
         pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        function SetPoints(P, intersect)
+        function SetPoint(P, intersect)
         {
             P.position.copy(intersect.point);
             PCounter++;
-            canvas.textContent = PCounter > 3 ? JSON.stringify(P1.position) + JSON.stringify(P2.position) + JSON.stringify(P3.position): '';
+            canvas.textContent = PCounter > 3 ? JSON.stringify(P1.position) + JSON.stringify(P2.position) + JSON.stringify(P3.position) : '';
             //console.info(canvas.textContent);
         }
+        function ReSetPoint(P)
+        {
+            P.position.copy(PZero.position);
+            canvas.textContent = '';
+            PCounter--;
+        }
+
         if (D3_Mesh) {
             raycaster.setFromCamera(pointer, camera);
-            const intersects = raycaster.intersectObject(D3_Mesh);
-            if (intersects.length > 0) {
-                const intersect = intersects[0];
-                console.info(intersect.point);
-                PCounter == 1 ? SetPoints(P1, intersect) : PCounter == 2 ? SetPoints(P2, intersect) : PCounter == 3 ? SetPoints(P3, intersect): "";
+            //const intersects = raycaster.intersectObject(event.type == 'click' ? D3_Mesh : Points);
+            if (event.type == 'click') {
+
+                const intersects = raycaster.intersectObject(D3_Mesh);
+                if (intersects.length > 0)
+                {
+                    const intersect = intersects[0];
+                    console.info(intersect.point);
+                    P1.position.equals(PZero.position) ? SetPoint(P1, intersect) : P2.position.equals(PZero.position) ? SetPoint(P2, intersect) : P3.position.equals(PZero.position) ? SetPoint(P3, intersect) : "";
+                }
+            }
+            else
+            {
+
+                raycaster.params.Points.threshold = 1000000000;
+                const P = raycaster.intersectObject(P1).length > 0 ? P1 : raycaster.intersectObject(P2).length > 0 ? P2 : raycaster.intersectObject(P3).length > 0 ? P3 : null;
+                if (P)
+                {
+                    console.info(P.point + "removed to zero");
+                    P.position.copy(PZero.position);
+                    canvas.textContent = '';
+                    PCounter--;
+                }
+                raycaster.params.Points.threshold = 0.1
             }
         }
     }
@@ -122,6 +151,7 @@ function RenderFileOnCanvas(files, canvas,) {
     }
 
     canvas.addEventListener('click', onPointerClick);
+    canvas.addEventListener('contextmenu', onPointerClick);
     requestAnimationFrame(render);
 }
 export default RenderFileOnCanvas;
