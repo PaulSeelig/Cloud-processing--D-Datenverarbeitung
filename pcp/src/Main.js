@@ -73,6 +73,8 @@ function AssignBtns() {
     var importinput = document.querySelector('.objViewWin:last-child .import');
     importinput.addEventListener("change", event => { ImportFile(event.target) });
     document.querySelector('.objViewWin:last-child input.dragndrop').addEventListener("change", event => { ImportFile(event.target) });
+
+    document.querySelector('.objViewWin:last-child .Open_Further_Options').addEventListener("change", event => { HideShowOptions(event.target) });
 }
 /**
  * minimizing a ViewWindow with content, but deletes empty one.
@@ -179,6 +181,17 @@ function AddToDialog(diamessage) {
     if (document.querySelectorAll('#Dialog.minimized').length > 0) {
         document.querySelector('#Dialog').classList.remove('minimized');
     }
+}
+function HideShowOptions(optionsBtnCheck)
+{
+    const optionsCont = optionsBtnCheck.parentNode.parentNode.querySelector('.Open_Further_Options_Container');
+    if (optionsBtnCheck.checked) {
+        optionsBtnCheck.classList.add('.opt-135Deg');
+        optionsCont.classList.remove('minimized');
+    }
+    else {
+        optionsCont.classList.add('minimized');
+        optionsBtnCheck.classList.remove('.opt-135Deg');    }
 }
 var dialin = 0;
 /**

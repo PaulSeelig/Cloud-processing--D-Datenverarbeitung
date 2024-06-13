@@ -28,6 +28,9 @@
     position: absolute;
     bottom: -100%;
 }
+.minimized{
+    opacity: 0;
+}
 #miniViewContainer{
     height: 100%;
 }
@@ -125,7 +128,7 @@ input.pointsize {
 .option-menu-bar button, input, label {
     color: white;
     z-index: 4;
-    margin: 0 .5em;
+    margin: .2em .5em;
 }
 .import::-webkit-file-upload-button {
     visibility: hidden;
@@ -181,6 +184,17 @@ button#showOrHideDialog {
     background-size:     contain;
     background-position: center;
 }
+input.rotateBtn.objViewBtn {
+    visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+input.rotateBtn.objViewBtn::after {
+    position: absolute;
+    visibility: visible;
+    content: 'Rotate';
+}
 input.Open_Further_Options {
     left: 0;
     position: absolute;
@@ -189,20 +203,25 @@ input.Open_Further_Options {
     width: 2em;
     margin: 0;
 }
-input.Open_Further_Options::before {
-    content: "#";
-    display: flex;
-    position: absolute;
-    width: 2em;
-    height: 100%;
-    top: 0;
-    opacity: 1;
-    left: 0;
-    background-color: #207d9d42;
-    align-items: center;
-    justify-content: center;
-    visibility: visible;
-}
+
+    input.Open_Further_Options::before {
+        content: "|||";
+        transform: rotateZ(90deg);
+        display: flex;
+        position: absolute;
+        width: 2em;
+        height: 100%;
+        top: 0;
+        opacity: 1;
+        left: 0;
+        /*background-color: #207d9d42;*/
+        align-items: center;
+        justify-content: center;
+        visibility: visible;
+    }
+    input.Open_Further_Options.\.opt-135Deg {
+        transform: rotateZ(45deg);
+    }
 .Open_Further_Options_Container {
     display: flex;
     background: linear-gradient(5deg, rgb(102 254 255 / 51%), #1f8168ab, #7d2a2adb);
@@ -212,6 +231,7 @@ input.Open_Further_Options::before {
     border-radius: 5%;
     padding: .2em;
     left: .5em;
+    z-index: 6;
     flex-direction: column;
     flex-wrap: nowrap;
 }

@@ -21,13 +21,10 @@
             <!-- this div (and children) should stay free of any IDs, as it gets cloned at some point and the same ID should always exist just once -->
             <div class="option-menu-bar">
                 <input type="checkbox" class="Open_Further_Options" />
-
-
                 <button type="button" class="miniBtn Windbtn objViewBtn">--</button>
                 <button type="button" class="closeBtn Windbtn objViewBtn">&#x2715;</button>
             </div>
-            <div class="Open_Further_Options_Container">
-                <label for="rotate">rotate</label>
+            <div class="Open_Further_Options_Container minimized">
                 <input type="checkbox" name="rotate" class="rotateBtn objViewBtn" />
                 <input type="color" name="colors" class="color" value="#bbbbbb" />
                 <input type="file" name="chooseFile" class="import" accept=".ply, .xyz, .STL" />
