@@ -30,6 +30,7 @@
 }
 .minimized{
     opacity: 0;
+    z-index: 0 !important;
 }
 #miniViewContainer{
     height: 100%;
@@ -184,13 +185,13 @@ button#showOrHideDialog {
     background-size:     contain;
     background-position: center;
 }
-input.rotateBtn.objViewBtn {
+input.rotateBtn {
     visibility: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
-input.rotateBtn.objViewBtn::after {
+input.rotateBtn::after {
     position: absolute;
     visibility: visible;
     content: 'Rotate';
@@ -267,12 +268,11 @@ button.Windbtn.objViewBtn {
     background: #ffffff00;
     color: #fff;
     display: flex;
-    width: 3em;
+    width: 2em;
     margin: 0;
     padding: .1em .2em;
-    font-size: 1.1em;
     align-items: center;
-    border: 1px solid #a9a9a9;
+    border: 1px solid #a9a9a944;
     justify-content: center;
 }
 button:nth-child(even) {
