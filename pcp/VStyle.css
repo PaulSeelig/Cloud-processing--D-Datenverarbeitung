@@ -28,6 +28,10 @@
     position: absolute;
     bottom: -100%;
 }
+.minimized{
+    opacity: 0;
+    z-index: 0 !important;
+}
 #miniViewContainer{
     height: 100%;
 }
@@ -122,10 +126,10 @@ input.pointsize {
     flex-direction: column-reverse;
     justify-content: flex-start;
 }
-.option-menu button, input, label {
+.option-menu-bar button, input, label {
     color: white;
     z-index: 4;
-    margin: 0 .5em;
+    margin: .2em .5em;
 }
 .import::-webkit-file-upload-button {
     visibility: hidden;
@@ -181,10 +185,62 @@ button#showOrHideDialog {
     background-size:     contain;
     background-position: center;
 }
-.option-menu {
+input.rotateBtn {
+    visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+input.rotateBtn::after {
+    position: absolute;
+    visibility: visible;
+    content: 'Rotate';
+}
+input.Open_Further_Options {
+    left: 0;
+    position: absolute;
+    visibility: hidden;
+    height: 100%;
+    width: 2em;
+    margin: 0;
+}
+
+    input.Open_Further_Options::before {
+        content: "|||";
+        transform: rotateZ(90deg);
+        display: flex;
+        position: absolute;
+        width: 2em;
+        height: 100%;
+        top: 0;
+        opacity: 1;
+        left: 0;
+        /*background-color: #207d9d42;*/
+        align-items: center;
+        justify-content: center;
+        visibility: visible;
+    }
+    input.Open_Further_Options.\.opt-135Deg {
+        transform: rotateZ(45deg);
+    }
+.Open_Further_Options_Container {
+    display: flex;
+    background: linear-gradient(5deg, rgb(102 254 255 / 51%), #1f8168ab, #7d2a2adb);
+    position: absolute;
+    top: 2em;
+    border: 1px solid #fff;
+    border-radius: 5%;
+    padding: .2em;
+    left: .5em;
+    z-index: 6;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+.option-menu-bar {
     display: flex;
     align-items: center;
     position: absolute;
+    justify-content: flex-end;
     top: 0;
     left: 0;
     color: white !important;
@@ -199,7 +255,7 @@ button#showOrHideDialog {
     overflow: hidden;
     transition: .5s ease-in all;
 }
-.objViewWin .option-menu {
+.objViewWin .option-menu-bar {
     min-height: 10px;
     height: 1.5em;
     background: linear-gradient(5deg, rgb(102 254 389 / 41%), #1f816844, #77000020);
@@ -212,12 +268,11 @@ button.Windbtn.objViewBtn {
     background: #ffffff00;
     color: #fff;
     display: flex;
-    width: 3em;
+    width: 2em;
     margin: 0;
     padding: .1em .2em;
-    font-size: 1.1em;
     align-items: center;
-    border: 1px solid #a9a9a9;
+    border: 1px solid #a9a9a944;
     justify-content: center;
 }
 button:nth-child(even) {
