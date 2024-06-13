@@ -6,13 +6,16 @@
 #include <sstream>
 #include <iostream>
 
-#include "crow.h"
+//The Crow relevent headers
+#include "crow.h" //this needs to be replaced when using Linux to #include "crow_all.h"
 #include <crow/json.h>
 #include <crow/multipart.h>
 #include <crow/middlewares/cors.h>
-//#include <nlohmann/json.hpp>
+//The PCL relevant headers
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/registration/transformation_estimation_svd.h>
+#include <pcl/io/pcd_io.h>
 
 int main()
 {
@@ -139,13 +142,21 @@ int main()
 					//logic goes here target_points->points.push_back();
 				}
 			}
-			//here is code to allign the 2 using SVD 
+			//Test if both clouds are of the same size
+			if (source_points->points.size() != target_points->points.size()) {
+				return crow::response(400, "There is a missmatch between the selected Points");
+			}
+
+			// Estimate the transformation matrix using SVD
+			pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ> trans_est;
+			pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation;
+			trans_est.estimateRigidTransformation(*source_points, *target_points, transformation);
 
 			//initialize response
 			//response will be a 4x4 Matrix object probably converted to a json object
 			crow::json::wvalue combinedData;
-			combinedData["message"] = "Data processed successfully";
-			combinedData["status"] = "success";
+			combinedData["message"] = "";
+			combinedData["status"] = "";
 
 			//Initialize Response
 			crow::response res(combinedData);
