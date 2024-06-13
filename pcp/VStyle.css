@@ -122,7 +122,7 @@ input.pointsize {
     flex-direction: column-reverse;
     justify-content: flex-start;
 }
-.option-menu button, input, label {
+.option-menu-bar button, input, label {
     color: white;
     z-index: 4;
     margin: 0 .5em;
@@ -181,10 +181,45 @@ button#showOrHideDialog {
     background-size:     contain;
     background-position: center;
 }
-.option-menu {
+input.Open_Further_Options {
+    left: 0;
+    position: absolute;
+    visibility: hidden;
+    height: 100%;
+    width: 2em;
+    margin: 0;
+}
+input.Open_Further_Options::before {
+    content: "#";
+    display: flex;
+    position: absolute;
+    width: 2em;
+    height: 100%;
+    top: 0;
+    opacity: 1;
+    left: 0;
+    background-color: #207d9d42;
+    align-items: center;
+    justify-content: center;
+    visibility: visible;
+}
+.Open_Further_Options_Container {
+    display: flex;
+    background: linear-gradient(5deg, rgb(102 254 255 / 51%), #1f8168ab, #7d2a2adb);
+    position: absolute;
+    top: 2em;
+    border: 1px solid #fff;
+    border-radius: 5%;
+    padding: .2em;
+    left: .5em;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+.option-menu-bar {
     display: flex;
     align-items: center;
     position: absolute;
+    justify-content: flex-end;
     top: 0;
     left: 0;
     color: white !important;
@@ -199,7 +234,7 @@ button#showOrHideDialog {
     overflow: hidden;
     transition: .5s ease-in all;
 }
-.objViewWin .option-menu {
+.objViewWin .option-menu-bar {
     min-height: 10px;
     height: 1.5em;
     background: linear-gradient(5deg, rgb(102 254 389 / 41%), #1f816844, #77000020);

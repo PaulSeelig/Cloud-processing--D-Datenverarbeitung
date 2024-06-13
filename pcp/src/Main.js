@@ -68,9 +68,9 @@ async function Combine() {
  * it might look, like it made more sense to use IDs instead of classes, but this elements get cloned and therefor there would be multiple elements with the same Id => lots of errors & worst practise
  */
 function AssignBtns() {
-    document.querySelector('.objViewWin:last-child .option-menu .closeBtn').addEventListener("click", event => { RemoveView(event.target, true) });
-    document.querySelector('.objViewWin:last-child .option-menu .miniBtn').addEventListener("click", event => { RemoveView(event.target, false) });
-    var importinput = document.querySelector('.objViewWin:last-child .option-menu .import');
+    document.querySelector('.objViewWin:last-child .closeBtn').addEventListener("click", event => { RemoveView(event.target, true) });
+    document.querySelector('.objViewWin:last-child .miniBtn').addEventListener("click", event => { RemoveView(event.target, false) });
+    var importinput = document.querySelector('.objViewWin:last-child .import');
     importinput.addEventListener("change", event => { ImportFile(event.target) });
     document.querySelector('.objViewWin:last-child input.dragndrop').addEventListener("change", event => { ImportFile(event.target) });
 }
@@ -158,7 +158,7 @@ function visualFile(objView, files) {
     //const files = filetwo? [file, filetwo] : [file]
     objView.title = files.length < 2 ? files[0].name : "CombineView: " + files[0].name + " + " + files[1].name;
     for (let i = 0; i < files.length - 1; i++) {
-        const optionmenuContent = objView.querySelector('.option-menu');
+        const optionmenuContent = objView.querySelector('.Open_Further_Options_Container');
         const before = optionmenuContent.childNodes[5];
         optionmenuContent.insertBefore(optionmenuContent.querySelector('.rotateBtn').cloneNode(true), before);
         optionmenuContent.insertBefore(optionmenuContent.querySelector('.color').cloneNode(true), before);
