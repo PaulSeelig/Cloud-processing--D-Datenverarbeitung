@@ -161,13 +161,21 @@ int main()
 			pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation;
 			trans_est.estimateRigidTransformation(*source_points, *target_points, transformation);
 
-			//initialize response
 			//response transformation matrix
-			crow::json::wvalue combinedData;
-			combinedData["message"] = "Still not implemented we are working hard to fix this";
+			crow::json::wvalue json_matrix;
+			crow::json::wvalue::list matrix_array;
+
+			//4x4 matrix -> json object
+			for (int i = 0; i < 4; ++i) {
+				for (int j = 0; j < 4; ++j) {
+					matrix_array.push_back(transformation(i, j));
+				}
+			}
+
+			json_matrix["matrix"] = std::move(matrix_array);
 
 			//Initialize Response
-			crow::response res(combinedData);
+			crow::response res(json_matrix);
 
 			//Headers:
 			res.add_header("Access-Control-Allow-Origin", URL);
