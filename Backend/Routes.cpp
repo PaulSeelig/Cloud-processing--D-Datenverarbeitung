@@ -24,6 +24,9 @@ int main()
 	//Logger for debugging
 	app.loglevel(crow::LogLevel::Info);
 
+	//Weblocation for CORS header
+	std::string URL = "http://localhost:5173";
+
 	//Point Clouds where the imported Data gets Saved, can then be deleted with the /delete3DFiles endpoint
 	pcl::PointCloud<pcl::PointXYZ>::Ptr source_points(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr target_points(new pcl::PointCloud<pcl::PointXYZ>());
@@ -31,7 +34,7 @@ int main()
 
 	//Code Audrik ------------------------
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
-		[](const crow::request& req) {
+		[URL](const crow::request& req) {
 
 			
 			// Get the content type from the request header
@@ -54,7 +57,7 @@ int main()
 					}*/
 					crow::response res(200, "Data recieved");
 					
-					res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
+					res.add_header("Access-Control-Allow-Origin", URL);
 					// If valid, return the file content back
 					return res;
 				}
@@ -91,7 +94,7 @@ int main()
 
 	//ICP Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/mergeImportedFiles").methods("POST"_method)
-		([](const crow::request& req) 
+		([URL](const crow::request& req) 
 		{
 			//This will be where the code to deciver the incoming Data
 			//recieved json data (if thats how we are doing it)
@@ -110,59 +113,64 @@ int main()
 			crow::json::wvalue response;
 			response["message"] = "not implemented yet";
 			crow::response res(response);
-			res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
+			res.add_header("Access-Control-Allow-Origin", URL);
 			return res;
 		});
 
 
 	//Pointpicking Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/pointsPicked").methods(crow::HTTPMethod::POST)
-		([](const crow::request& req) 
+		([URL](const crow::request& req) 
 		{
 			//Innitialization and subsequent conversion from Points picked to Pointclouds
 			crow::json::rvalue pickedPoints;
 
 			pcl::PointCloud<pcl::PointXYZ>::Ptr source_points(new pcl::PointCloud<pcl::PointXYZ>());
 			pcl::PointCloud<pcl::PointXYZ>::Ptr target_points(new pcl::PointCloud<pcl::PointXYZ>());
-
+			  
 			//Test if the send object is a Json Obj
-			try {
+			try 
+			{
 				pickedPoints = crow::json::load(req.body);
 			}
-			catch (const std::exception& e) {
+			catch (const std::exception& e) 
+			{
 				return crow::response(400);
 			}
+
+			//Test if the size is 6 to catch size errors
+			if (pickedPoints.size() != 6) 
+			{
+				return crow::response(400, "There is a missmatch between the selected Points");
+			}
+
 			//Here is where the filling of the pointclouds will happen
 			for (int i = 0; i < pickedPoints.size(); i++)
 			{
+				//source_points->points.push_back(); //i need to see how the json object loo
 				//to differentiate the 2 picked Points
 				if (((pickedPoints.size() - 1) / 2) > i) 
 				{
 					//how to extract the exact thingys -> pcl::PointXYZ(x,y,z); //float!
-					//logic goes here target_points->points.push_back();
+					//target_points->points.push_back();
 				}
 			}
-			//Test if both clouds are of the same size
-			if (source_points->points.size() != target_points->points.size()) {
-				return crow::response(400, "There is a missmatch between the selected Points");
-			}
-
+			
 			// Estimate the transformation matrix using SVD
 			pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ> trans_est;
 			pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation;
 			trans_est.estimateRigidTransformation(*source_points, *target_points, transformation);
 
 			//initialize response
-			//response will be a 4x4 Matrix object probably converted to a json object
+			//response transformation matrix
 			crow::json::wvalue combinedData;
-			combinedData["message"] = "";
-			combinedData["status"] = "";
+			combinedData["message"] = "Still not implemented we are working hard to fix this";
 
 			//Initialize Response
 			crow::response res(combinedData);
 
 			//Headers:
-			res.add_header("Access-Control-Allow-Origin", "http://localhost:5173");
+			res.add_header("Access-Control-Allow-Origin", URL);
 
 			return res;
 		});
