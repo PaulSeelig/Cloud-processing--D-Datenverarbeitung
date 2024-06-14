@@ -27,6 +27,7 @@ function setup() {
             document.querySelector('#Dialog').classList.add('minimized');
         }
     });
+    clone.classList.add('minimized');
     AddToDialog("Good morning folks... ");
     AssignBtns();
     AddView(null);
@@ -95,12 +96,17 @@ function MiniView(evlement) {
         document.getElementById('miniViewContainer').appendChild(btn);
     }
 }
+function Delay(milliseconds) {
+    return new Promise(resolve => {
+        setTimeout(resolve, milliseconds);
+    });
+}
 /**
  * Adds a new viewWindow
  * if combineFile is a file and not null, it will be displayed in the new viewWindow
  * @param {any} combineFile
  */
-function AddView(combineFiles) {
+async function AddView(combineFiles) {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
     var winCount = viewcont.childElementCount;
     if (winCount < MaxWindows || combineFiles) {
@@ -114,10 +120,12 @@ function AddView(combineFiles) {
         }
         viewcont.appendChild(viewclone);
         AssignBtns();
-
+        setTimeout( AddToDialog("there u go:)"), 2000000 );
         if (winCount == MaxWindows) {
             document.getElementById('Addbtn').classList.add("not_accessible");
         }
+        await Delay(100);
+        await viewclone.classList.remove('minimized');
     }
     else {
         AddToDialog("Sorry, you can't have more than " + MaxWindows + " Windows open");
@@ -201,29 +209,36 @@ var dialin = 0;
  * @param {any} evlement
  * @param {any} doDelete
  */
-function RemoveView(evlement, doDelete) {
-
+async function RemoveView(evlement, doDelete) {
+    const view = evlement.parentNode.parentNode;
+    
+    
     var dias = ["...", "You can't do this...", "...", ".......", "You don't want to do this", "...", "...", "...", "We are protecting you from the vast nothing, the eternal blindness of ceasing matter, the uncomprehendable darkness of the never ending light...", "...", "...", "..", ".", ""];
     var viewCont = document.getElementById("objViewCont");
     const miniviewCount = document.getElementById('miniViewContainer').childElementCount;
     if (viewCont.childElementCount - miniviewCount > 1) {
-        if (!doDelete) {
-            MiniView(evlement)
-        }
-        else {
-            viewCont.removeChild(evlement.parentNode.parentNode);
-        }
-        if (viewCont.childElementCount == (MaxWindows - 1)) {
-            document.getElementById('Addbtn').classList.remove("not_accessible");
-        }
-        if (viewCont.childElementCount - miniviewCount == 1) {
-            viewCont.querySelector('.closeBtn').classList.add("not_accessible");
-            viewCont.querySelector('.miniBtn').classList.add("not_accessible");
-        }
+        view.classList.add('minimized');
+        await Delay(1000);
+        /*await function(trtue){*/
+            if (!doDelete) {
+                MiniView(evlement)
+            }
+            else {
+                viewCont.removeChild(view);
+            }
+            if (viewCont.childElementCount == (MaxWindows - 1)) {
+                document.getElementById('Addbtn').classList.remove("not_accessible");
+            }
+            if (viewCont.childElementCount - miniviewCount == 1) {
+                viewCont.querySelector('.closeBtn').classList.add("not_accessible");
+                viewCont.querySelector('.miniBtn').classList.add("not_accessible");
+            }
+    
     }
     else {
         AddToDialog(dias[dialin]);
         dialin += dialin < (dias.length - 1) ? 1 : 0;
     }
+    
 }
 window.addEventListener("load", setup);

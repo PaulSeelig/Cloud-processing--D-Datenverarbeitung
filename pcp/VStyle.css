@@ -14,6 +14,7 @@
     flex-grow: 1;
     flex-basis: auto;
     max-height: calc(100% - 40px - 1em);
+    max-width: 100%;
     min-width: 20%;
     bottom: 0;
     padding: 20px;
@@ -21,16 +22,9 @@
     border: .5em groove #000000;
     flex-wrap: wrap;
     justify-content: center;
+    transition: 1s ease all;
     align-items: center;
     box-shadow: inset 0 0 25px 10px #897c7caa;
-}
-.objViewWin.minimized {
-    position: absolute;
-    bottom: -100%;
-}
-.minimized{
-    opacity: 0;
-    z-index: 0 !important;
 }
 #miniViewContainer{
     height: 100%;
@@ -112,6 +106,7 @@ input.pointsize {
 }
 #Dialog {
     max-height: 40%;
+    max-width: 100%;
     position: absolute;
     bottom: 0;
     left: 0;
@@ -120,7 +115,8 @@ input.pointsize {
     color: darkgrey;
     overflow: auto;
     padding-left: 6em;
-    border-color: #ccf;
+    border-color: #fff;
+    border-width: thick;
     transition: .8s ease all;
     display: flex;
     flex-direction: column-reverse;
@@ -154,16 +150,13 @@ input.pointsize {
 .hidden{
     visibility: hidden;
 }
-#Dialog.minimized {
-    bottom: -50vh;
-    left: -10%;
-}
 button.special-btn {
     height: auto;
     padding: .5em;
+    bottom: 3%;
     border: 1px solid;
     position: absolute;
-    z-index: 3;
+    z-index: 6;
     border-radius: 25%;
     font-style: italic;
     transition: 1s ease-in-out all;
@@ -203,6 +196,7 @@ input.Open_Further_Options {
     height: 100%;
     width: 2em;
     margin: 0;
+    transition: .3s ease all;
 }
 
     input.Open_Further_Options::before {
@@ -232,9 +226,23 @@ input.Open_Further_Options {
     border-radius: 5%;
     padding: .2em;
     left: .5em;
+    overflow: hidden;
     z-index: 6;
     flex-direction: column;
     flex-wrap: nowrap;
+    transition: 1s cubic-bezier(0.62, -0.04, 0.85, 1.5) all;
+    max-height: 100%;
+    max-width: 100%;
+}
+.minimized {
+    z-index: 0 !important;
+    max-height: 0 !important;
+    max-width: 0;
+    min-width: 0;
+    padding: 0 !important;
+    border: none !important;
+    overflow: hidden;
+    opacity: .5;
 }
 .option-menu-bar {
     display: flex;
