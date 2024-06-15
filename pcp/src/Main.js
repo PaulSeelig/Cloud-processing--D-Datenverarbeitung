@@ -19,6 +19,7 @@ function setup() {
     document.getElementById("combine").addEventListener("click", Combine);
     document.getElementById("saveBtn").addEventListener("click", SaveFile);
     document.getElementById("DarkLightBtn").addEventListener("click", DarkLightMode);
+    document.getElementById("clearBtn").addEventListener("click", ClearViews);
     document.getElementById("showOrHideDialog").addEventListener("click", function () {
         if (document.querySelectorAll('#Dialog.minimized').length > 0) {
             document.querySelector('#Dialog').classList.remove('minimized');
@@ -46,12 +47,10 @@ async function Combine() {
     const dragelements = document.querySelectorAll('[type="file"]');
     const files = [];
     const PickPoints = [];
-    for (const drgndrpelement of dragelements)
-    {
+    for (const drgndrpelement of dragelements) {
         const view = drgndrpelement.parentNode.parentNode;
         const canvas = view.querySelector('canvas');
-        if (drgndrpelement.files[0] && canvas.textContent != '')
-        {
+        if (drgndrpelement.files[0] && canvas.textContent != '') {
             files.push(drgndrpelement.files[0]);
             PickPoints.push(canvas.textContent);
             MiniView(drgndrpelement);
@@ -120,7 +119,7 @@ async function AddView(combineFiles) {
         }
         viewcont.appendChild(viewclone);
         AssignBtns();
-        setTimeout( AddToDialog("there u go:)"), 2000000 );
+        setTimeout(AddToDialog("there u go:)"), 2000000);
         if (winCount == MaxWindows) {
             document.getElementById('Addbtn').classList.add("not_accessible");
         }
@@ -139,28 +138,34 @@ async function AddView(combineFiles) {
  */
 async function ImportFile(eventtarget) {
     if (eventtarget.files.length > 0) {
-            const file = [eventtarget.files[0]];
-            var fileEnd = '.' + file[0].name.split(".").at(-1);
-            if (fileEnd == '.ply' || fileEnd == '.stl' || fileEnd == '.xyz') {
-                const graParent = eventtarget.parentNode.parentNode;
-                visualFile(graParent, file)
-                // Modified By Audrik --- 
-                try {
-                    const response = await scanService.Import3dScan(file[0]);
-                    console.log('File successfully uploaded and validated:', response);
-                    AddToDialog(`File successfully uploaded and validated`);
-                    const text = await response.text(); // Hier wird der Text korrekt ausgelesen
-                    //console.log(text);
-                }
-                catch (error) {
-                    console.error('Error uploading file:', error);
-                    AddToDialog(`Error uploading file: ${error.message}`);
-                }
-                //
-            }
-            else {
-                AddToDialog('this doesn\'t seem to be the correct format. ... We\'re not supporting ' + fileEnd + '-formated files... we only work with .ply .xyz & .stl -formats for now');
-            }
+        const file = [eventtarget.files[0]];
+
+
+        const graParent = eventtarget.parentNode.parentNode;
+        ClearToDialog()
+        AddToDialog(`loading ...`);
+        // Modified By Audrik --- 
+        try {
+            const response = await scanService.Import3dScan(file[0]);
+
+            console.log('File successfully uploaded and validated:', response);
+            AddToDialog(`File successfully uploaded and validated`);
+            //console.log(text);
+            visualFile(graParent, file)
+        }
+        catch (error) {
+            console.error('Error uploading file:', error);
+            AddToDialog(`Error uploading file: ${error.message}`);
+        }
+
+        //var fileEnd = '.' + file[0].name.split(".").at(-1);
+        //if (fileEnd == '.ply' || fileEnd == '.stl' || fileEnd == '.xyz') {
+
+        //    //
+        //}
+        //else {
+        //    AddToDialog('this doesn\'t seem to be the correct format. ... We\'re not supporting ' + fileEnd + '-formated files... we only work with .ply .xyz & .stl -formats for now');
+        //}
     }
 }
 
@@ -190,8 +195,15 @@ function AddToDialog(diamessage) {
         document.querySelector('#Dialog').classList.remove('minimized');
     }
 }
-function HideShowOptions(optionsBtnCheck)
-{
+
+function ClearToDialog() {
+    document.querySelector('#Dialog p').innerHTML = "";
+    DialogLine = 1;
+    if (document.querySelectorAll('#Dialog.minimized').length > 0) {
+        document.querySelector('#Dialog').classList.remove('minimized');
+    }
+}
+function HideShowOptions(optionsBtnCheck) {
     const optionsCont = optionsBtnCheck.parentNode.parentNode.querySelector('.Open_Further_Options_Container');
     if (optionsBtnCheck.checked) {
         optionsBtnCheck.classList.add('.opt-135Deg');
@@ -199,7 +211,8 @@ function HideShowOptions(optionsBtnCheck)
     }
     else {
         optionsCont.classList.add('minimized');
-        optionsBtnCheck.classList.remove('.opt-135Deg');    }
+        optionsBtnCheck.classList.remove('.opt-135Deg');
+    }
 }
 var dialin = 0;
 /**
@@ -211,8 +224,8 @@ var dialin = 0;
  */
 async function RemoveView(evlement, doDelete) {
     const view = evlement.parentNode.parentNode;
-    
-    
+
+
     var dias = ["...", "You can't do this...", "...", ".......", "You don't want to do this", "...", "...", "...", "We are protecting you from the vast nothing, the eternal blindness of ceasing matter, the uncomprehendable darkness of the never ending light...", "...", "...", "..", ".", ""];
     var viewCont = document.getElementById("objViewCont");
     const miniviewCount = document.getElementById('miniViewContainer').childElementCount;
@@ -220,25 +233,45 @@ async function RemoveView(evlement, doDelete) {
         view.classList.add('minimized');
         await Delay(1000);
         /*await function(trtue){*/
-            if (!doDelete) {
-                MiniView(evlement)
-            }
-            else {
-                viewCont.removeChild(view);
-            }
-            if (viewCont.childElementCount == (MaxWindows - 1)) {
-                document.getElementById('Addbtn').classList.remove("not_accessible");
-            }
-            if (viewCont.childElementCount - miniviewCount == 1) {
-                viewCont.querySelector('.closeBtn').classList.add("not_accessible");
-                viewCont.querySelector('.miniBtn').classList.add("not_accessible");
-            }
-    
+        if (!doDelete) {
+            MiniView(evlement)
+        }
+        else {
+            viewCont.removeChild(view);
+        }
+        if (viewCont.childElementCount == (MaxWindows - 1)) {
+            document.getElementById('Addbtn').classList.remove("not_accessible");
+        }
+        if (viewCont.childElementCount - miniviewCount == 1) {
+            viewCont.querySelector('.closeBtn').classList.add("not_accessible");
+            viewCont.querySelector('.miniBtn').classList.add("not_accessible");
+        }
+
     }
     else {
         AddToDialog(dias[dialin]);
         dialin += dialin < (dias.length - 1) ? 1 : 0;
     }
-    
+
 }
+
+/**
+ * this function clear both frontend and backend buffer
+ */
+async function ClearViews() {
+
+    try {
+        //await scanService.Delete3DFiles();
+        location.reload(true)
+        console.log('Files successfully Deleted:');
+        AddToDialog(`File successfully Deleted`);
+    }
+    catch (error) {
+        console.error('Error Deleting files:', error);
+        AddToDialog(`Error Deleting files: ${error.message}`);
+    }
+
+}
+
+
 window.addEventListener("load", setup);

@@ -3,7 +3,25 @@ class ScanService {
         this.baseUrl = baseUrl;
     }
 
-    async Import3dScan(fileContent) {      
+
+    async Delete3DFiles() {
+
+        const response = await fetch(`${this.baseUrl}/delete3DFiles`, {
+            method: 'DELETE', // HTTP method should be in uppercase
+            headers: {
+                'Content-Type': 'application/json', // Include headers if needed
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        return response;
+    }
+
+
+    async Import3dScan(fileContent) {
         const formData = new FormData();
         formData.append('File', fileContent);
 
@@ -11,8 +29,6 @@ class ScanService {
             method: 'POST',
             body: formData
         });
-        //console.log(response.body);
-        //console.log(response.text())
 
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
