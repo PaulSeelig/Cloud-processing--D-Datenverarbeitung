@@ -14,6 +14,7 @@
 //The PCL relevant headers
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/registration/icp.h> 
 #include <pcl/registration/transformation_estimation_svd.h>
 #include <pcl/io/pcd_io.h>
 
@@ -28,9 +29,12 @@ int main()
 	std::string URL = "http://localhost:5173";
 
 	//Point Clouds where the imported Data gets Saved, can then be deleted with the /delete3DFiles endpoint
-	pcl::PointCloud<pcl::PointXYZ>::Ptr source_points(new pcl::PointCloud<pcl::PointXYZ>());
-	pcl::PointCloud<pcl::PointXYZ>::Ptr target_points(new pcl::PointCloud<pcl::PointXYZ>());
+	pcl::PointCloud<pcl::PointXYZ>::Ptr source_points(new pcl::PointCloud<pcl::PointXYZ>);
+	pcl::PointCloud<pcl::PointXYZ>::Ptr target_points(new pcl::PointCloud<pcl::PointXYZ>);
 	//PCD format?? -> put the files in here convert from stl, ply and xyz to pcd pottentially?
+
+	//Output pointcloud
+	pcl::PointCloud<pcl::PointXYZ>::Ptr final_points(new pcl::PointCloud<pcl::PointXYZ>);
 
 	//Code Audrik ------------------------
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
@@ -127,7 +131,7 @@ int main()
 
 	//ICP Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/mergeImportedFiles").methods("POST"_method)
-		([URL](const crow::request& req)
+		([URL, target_points, source_points, final_points](const crow::request& req)
 			{
 				//This will be where the code to deciver the incoming Data
 				//recieved json data (if thats how we are doing it)
@@ -140,7 +144,16 @@ int main()
 				catch (const std::exception& e) {
 					return crow::response(400); //wrong data type
 				}
-				//Logic goes here
+				//Innitialization of icp and inputting the pointclouds
+				pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+				icp.setInputSource(source_points);
+				icp.setInputTarget(target_points);
+
+				//the transformation into a Final "Output" Pointcloud
+				icp.align(*final_points);
+
+				//std::cout << "ICP has " << (icp.hasConverged() ? "converged" : "not converged") << ", score: " << icp.getFitnessScore() << std::endl;
+				//std::cout << icp.getFinalTransformation() << std::endl;
 
 				//Crow Response
 				crow::json::wvalue response;
