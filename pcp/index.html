@@ -27,7 +27,7 @@
             <div class="Open_Further_Options_Container minimized">
                 <input type="checkbox" name="rotate" class="rotateBtn objViewBtn" />
                 <input type="color" name="colors" class="color" value="#bbbbbb" />
-                <input type="file" name="chooseFile" class="import" accept=".ply, .xyz, .STL" />
+                <!--<input type="file" name="chooseFile" class="import" accept=".ply, .xyz, .STL" />-->
                 <input type="range" name="pointsize" class="pointsize" min="1" max="1000000" value="1" />
             </div>
             <canvas></canvas>
@@ -39,6 +39,7 @@
     </div>
 
     <button type="button" id="showOrHideDialog" style="bottom: 3%;" class="special-btn">Dialog</button>
+    <button type="button" id="clearBtn" class="special-btn" style="right: calc(10% + 9em); bottom: 3%; top: unset">Clear All</button>
     <button type="button" id="combine" class="special-btn" style="right: calc(3% + 9em); bottom: 3%; top: unset">Combine</button>
     <button type="button" id="Addbtn" class="special-btn" style="right: 3%; bottom: 3%; top: unset">Add viewport</button>
     <div class="option-menu-bar">
