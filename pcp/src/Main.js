@@ -17,9 +17,13 @@ const clone = document.querySelector('#objViewCont .objViewWin').cloneNode(true)
 function setup() {
     document.getElementById("Addbtn").addEventListener("click", nul => { AddView(null) });
     document.getElementById("combine").addEventListener("click", Combine);
+
     document.getElementById("saveBtn").addEventListener("click", SaveFile);
     document.getElementById("DarkLightBtn").addEventListener("click", DarkLightMode);
-    document.getElementById("clearBtn").addEventListener("click", ClearViews);
+
+    document.querySelector('#MainOptions').addEventListener("change", event => { HideShowOptions(event.target) });
+    document.querySelector('[name="maincolors"]').addEventListener("input", event => { document.querySelector('#objViewCont').style.setProperty("background", event.target.value); });
+
     document.getElementById("showOrHideDialog").addEventListener("click", function () {
         if (document.querySelectorAll('#Dialog.minimized').length > 0) {
             document.querySelector('#Dialog').classList.remove('minimized');
@@ -97,7 +101,7 @@ function AssignBtns() {
     document.querySelector('.objViewWin:last-child input.dragndrop').addEventListener("change", event => { ImportFile(event.target) });
 
     document.querySelector('.objViewWin:last-child .Open_Further_Options').addEventListener("change", event => { HideShowOptions(event.target) });
-    //document.querySelector('canvas').textContent.addEventListener("change", event => {
+     //document.querySelector('canvas').textContent.addEventListener("change", event => {
     //    var check = CheckCombineConditions();
     //    const combtn = document.querySelector('#combine');
     //    check ? combtn.classList.add('not_accessible') : combtn.remove('not_accessible');
@@ -176,6 +180,7 @@ async function ImportFile(eventtarget) {
         {
             const view = eventtarget.parentNode.parentNode;
             visualFile(view, file)
+
             // Modified By Audrik --- 
             try {
                 const response = await scanService.Import3dScan(file[0]);
@@ -220,13 +225,13 @@ function AddToDialog(diamessage) {
     }
 }
 
-function ClearDialog() {
-    document.querySelector('#Dialog p').innerHTML = "";
-    DialogLine = 1;
-    if (document.querySelectorAll('#Dialog.minimized').length > 0) {
-        document.querySelector('#Dialog').classList.remove('minimized');
-    }
-}
+//function ClearDialog() {
+//    document.querySelector('#Dialog p').innerHTML = "";
+//    DialogLine = 1;
+//    if (document.querySelectorAll('#Dialog.minimized').length > 0) {
+//        document.querySelector('#Dialog').classList.remove('minimized');
+//    }
+//}
 function HideShowOptions(optionsBtnCheck) {
     const optionsCont = optionsBtnCheck.parentNode.parentNode.querySelector('.Open_Further_Options_Container');
     if (optionsBtnCheck.checked) {
@@ -282,20 +287,20 @@ async function RemoveView(evlement, doDelete) {
 /**
  * this function clear both frontend and backend buffer
  */
-async function ClearViews() {
+//async function ClearViews() {
 
-    try {
-        //await scanService.Delete3DFiles();
-        location.reload(true)
-        console.log('Files successfully Deleted:');
-        AddToDialog(`File successfully Deleted`);
-    }
-    catch (error) {
-        console.error('Error Deleting files:', error);
-        AddToDialog(`Error Deleting files: ${error.message}`);
-    }
+//    try {
+//        //await scanService.Delete3DFiles();
+//        location.reload(true)
+//        console.log('Files successfully Deleted:');
+//        AddToDialog(`File successfully Deleted`);
+//    }
+//    catch (error) {
+//        console.error('Error Deleting files:', error);
+//        AddToDialog(`Error Deleting files: ${error.message}`);
+//    }
 
-}
+//}
 
 
 window.addEventListener("load", setup);

@@ -43,18 +43,21 @@ function RenderFileOnCanvas(files, canvas,) {
             canvas.textContent = PCounter > 3 ? JSON.stringify(P1.position) + JSON.stringify(P2.position) + JSON.stringify(P3.position) : '';
             //console.info(canvas.textContent);
         }
-        function ReSetPoint(P)
-        {
-            P.position.copy(PZero.position);
-            canvas.textContent = '';
-            PCounter--;
-        }
 
         if (D3_Mesh) {
             raycaster.setFromCamera(pointer, camera);
             //const intersects = raycaster.intersectObject(event.type == 'click' ? D3_Mesh : Points);
-            if (event.type == 'click') {
-
+            raycaster.params.Points.threshold = 1000000000;
+            const P = raycaster.intersectObject(P1).length > 0 ? P1 : raycaster.intersectObject(P2).length > 0 ? P2 : raycaster.intersectObject(P3).length > 0 ? P3 : null;
+            if (P) {
+                console.info(P.point + "removed to zero");
+                P.position.copy(PZero.position);
+                canvas.textContent = '';
+                PCounter--;
+            }
+            else
+            {
+                raycaster.params.Points.threshold = 0.1
                 const intersects = raycaster.intersectObject(D3_Mesh);
                 if (intersects.length > 0)
                 {
@@ -62,20 +65,6 @@ function RenderFileOnCanvas(files, canvas,) {
                     console.info(intersect.point);
                     P1.position.equals(PZero.position) ? SetPoint(P1, intersect) : P2.position.equals(PZero.position) ? SetPoint(P2, intersect) : P3.position.equals(PZero.position) ? SetPoint(P3, intersect) : "";
                 }
-            }
-            else
-            {
-
-                raycaster.params.Points.threshold = 1000000000;
-                const P = raycaster.intersectObject(P1).length > 0 ? P1 : raycaster.intersectObject(P2).length > 0 ? P2 : raycaster.intersectObject(P3).length > 0 ? P3 : null;
-                if (P)
-                {
-                    console.info(P.point + "removed to zero");
-                    P.position.copy(PZero.position);
-                    canvas.textContent = '';
-                    PCounter--;
-                }
-                raycaster.params.Points.threshold = 0.1
             }
         }
     }
@@ -150,7 +139,7 @@ function RenderFileOnCanvas(files, canvas,) {
         requestAnimationFrame(render);
     }
 
-    canvas.addEventListener('click', onPointerClick);
+    canvas.addEventListener('dblclick', onPointerClick);
     canvas.addEventListener('contextmenu', onPointerClick);
     requestAnimationFrame(render);
 }
