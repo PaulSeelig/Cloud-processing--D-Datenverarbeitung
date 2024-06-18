@@ -42,26 +42,27 @@ function SaveFile() {
     AddToDialog("Uuuuhm... Nothing there to save...")
 }
 async function Combine() {
-
-    const dragelements = document.querySelectorAll('[type="file"]');
-    const files = [];
-    const PickPoints = [];
-    for (const drgndrpelement of dragelements)
-    {
-        const view = drgndrpelement.parentNode.parentNode;
-        const canvas = view.querySelector('canvas');
-        if (drgndrpelement.files[0] && canvas.textContent != '')
-        {
-            files.push(drgndrpelement.files[0]);
-            PickPoints.push(canvas.textContent);
-            MiniView(drgndrpelement);
+    if (document.querySelector('#objViewCont').childElementCount < MaxWindows) {
+        const dragelements = document.querySelectorAll('[type="file"]');
+        const files = [];
+        const PickPoints = [];
+        for (const drgndrpelement of dragelements) {
+            const view = drgndrpelement.parentNode.parentNode;
+            const canvas = view.querySelector('canvas');
+            if (drgndrpelement.files[0] && canvas.textContent != '') {
+                files.push(drgndrpelement.files[0]);
+                PickPoints.push(canvas.textContent);
+                MiniView(drgndrpelement);
+                canvas.textContent = '';
+            }
         }
+        AddToDialog(PickPoints)
+
+        AddView(files);
+
+        AddToDialog("Not fully Implemented Yet ... As u can c")
     }
-    AddToDialog(PickPoints)
-
-    AddView(files);
-
-    AddToDialog("Not fully Implemented Yet ... As u can c")
+    else { AddToDialog("Sorry u can't have mor than 8 Views. Please remove a View before creating the next one") }
 }
 /**
  * Adds EventListener to new Buttons, when new ViewWindow is created.
@@ -218,7 +219,7 @@ async function RemoveView(evlement, doDelete) {
     const miniviewCount = document.getElementById('miniViewContainer').childElementCount;
     if (viewCont.childElementCount - miniviewCount > 1) {
         view.classList.add('minimized');
-        await Delay(1000);
+        await Delay(100);
         /*await function(trtue){*/
             if (!doDelete) {
                 MiniView(evlement)
