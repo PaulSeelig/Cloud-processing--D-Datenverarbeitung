@@ -14,8 +14,11 @@ function RenderFileOnCanvas(files, canvas,) {
 
     const controls = new OrbitControls(camera, renderer.domElement);
     var D3_Mesh = null;
+    var D3_Mesh2 = null;
     const pointsize = canvas.parentNode.querySelector('.pointsize');
+    const pointsize2 = canvas.parentNode.querySelectorAll('.pointsize')[1];
     const pointclr = canvas.parentNode.querySelector('[name="colors"]');
+    const pointclr2 = canvas.parentNode.querySelectorAll('[name="colors"]')[1];
     function NewPoint(colour) { return new THREE.Mesh(new THREE.SphereGeometry(1 + pointsize.value / 500000, 1, 1), new THREE.MeshBasicMaterial({ color: colour })); }
     var P1 = NewPoint(0x3d9044);
     var P2 = NewPoint(0x32f044);
@@ -41,7 +44,6 @@ function RenderFileOnCanvas(files, canvas,) {
             P.position.copy(intersect.point);
             PCounter++;
             canvas.textContent = PCounter > 3 ? JSON.stringify(P1.position) + JSON.stringify(P2.position) + JSON.stringify(P3.position) : '';
-            //console.info(canvas.textContent);
         }
 
         if (D3_Mesh) {
@@ -68,13 +70,11 @@ function RenderFileOnCanvas(files, canvas,) {
             }
         }
     }
-
-    //document.addEventListener('pointermove', onPointerClick);
-    for (const file of files) {
-
+    for (var i = 0; i < files.length; i++) {
+        const a = i;
         const reader = new FileReader();
-        const PointsMaterial = new THREE.PointsMaterial({ color: pointclr.value, size: pointsize.value / 500000 });
-        reader.readAsDataURL(file);
+        const PointsMaterial = new THREE.PointsMaterial({ color:  pointclr.value, size: pointsize.value / 500000 });
+        reader.readAsDataURL(files[i]);
         reader.onload = (e) => {
             const geometry = new THREE.BufferGeometry();
             let positions = [];
@@ -83,30 +83,31 @@ function RenderFileOnCanvas(files, canvas,) {
             function handleGeometry(parsedGeometry) {
                 positions = parsedGeometry.attributes.position.array;
 
-                // Generate random colors for each point for demonstration
-                for (let i = 0; i < positions.length; i += 3) {
-                    colors.push(Math.random(), Math.random(), Math.random());
-                }
-
                 geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
                 geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-                D3_Mesh = new THREE.Points(geometry, PointsMaterial);
-                scene.add(D3_Mesh);
+                a == 0 ? D3_Mesh = new THREE.Points(geometry, PointsMaterial)  : D3_Mesh2 = new THREE.Points(geometry, PointsMaterial) ;
+                scene.add(a == 0 ? D3_Mesh : D3_Mesh2);
             }
 
-            if (file.name.endsWith('.ply')) {
+            if (files[a].name.endsWith('.ply')) {
                 new PLYLoader().load(e.target.result, handleGeometry, undefined, console.error);
-            } else if (file.name.endsWith('.xyz')) {
+            } else if (files[a].name.endsWith('.xyz')) {
                 new XYZLoader().load(e.target.result, handleGeometry, undefined, console.error);
-            } else if (file.name.endsWith('.stl')) {
+            } else if (files[a].name.endsWith('.stl')) {
                 new STLLoader().load(e.target.result, handleGeometry, undefined, console.error);
             } else {
                 return console.error("Unsupported file type");
             }
-            pointsize.addEventListener("input", function () { D3_Mesh.material.size = pointsize.value / 500000 });
-            pointclr.addEventListener("input", function () { D3_Mesh.material.color = new THREE.Color(pointclr.value) });// CreatePointsMaterial() });
-        }
+            if (a == 0) {
+                pointsize.addEventListener("input", function () { D3_Mesh.material.size = pointsize.value / 500000 });
+                pointclr.addEventListener("input", function () { D3_Mesh.material.color = new THREE.Color(pointclr.value) });
+                
+            }
+            else {
+                pointsize2.addEventListener("input", function () { D3_Mesh2.material.size = pointsize2.value / 500000 });
+                pointclr2.addEventListener("input", function () { D3_Mesh2.material.color = new THREE.Color(pointclr2.value) });
+            }
+        }     
     }
     function resizeRendererToDisplaySize(renderer) {
         renderer.clear(true, true);

@@ -66,8 +66,8 @@ function CheckCombineConditions()
     }
 }
 async function Combine() {
-    const check = CheckCombineConditions();
-    if (check) { AddToDialog(check) }
+    const errormsg = CheckCombineConditions();
+    if (errormsg) { AddToDialog(errormsg) }
     else {
         const files = [];
         const PickPoints = [];
@@ -80,7 +80,7 @@ async function Combine() {
                 canvas.textContent = '';
             }
         }
-        AddToDialog(PickPoints)
+        //scanService.export3DScan(PickPoints)
 
         AddView(files);
 
