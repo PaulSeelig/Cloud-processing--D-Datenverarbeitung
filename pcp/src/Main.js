@@ -19,7 +19,6 @@ function setup() {
     document.getElementById("combine").addEventListener("click", Combine);
 
     document.getElementById("saveBtn").addEventListener("click", SaveFile);
-    document.getElementById("DarkLightBtn").addEventListener("click", DarkLightMode);
 
     document.querySelector('#MainOptions').addEventListener("change", event => { HideShowOptions(event.target) });
     document.querySelector('[name="maincolors"]').addEventListener("input", event => { document.querySelector('#objViewCont').style.setProperty("background", event.target.value); });
@@ -36,13 +35,14 @@ function setup() {
     AddToDialog("Good morning folks... ");
     AssignBtns();
     AddView(null);
-    AddToDialog("I don't care for the actual time... Have Fun");
+    AddToDialog("Using this site:");
+    AddToDialog("1st step: Add atleast 2 3D-files (only 1 per view) to the site");
+    AddToDialog("2nd step: set each 3 Points on the Models (with right- or doubleclick)");
+    AddToDialog("[The Points with the same color will align to each other and transform the models accordingly]");
+    AddToDialog("3rd step: press combine to see the files in one view aligned");
 }
 
 /**should enable a bright design, as an alternative to the for now dark-Design*/
-function DarkLightMode() {
-    AddToDialog("Not implemented yet,...sry ://")
-}
 function SaveFile() {
     AddToDialog("Uuuuhm... Nothing there to save...")
 }
@@ -150,7 +150,6 @@ async function AddView(combineFiles) {
         }
         viewcont.appendChild(viewclone);
         AssignBtns();
-        setTimeout(AddToDialog("there u go:)"), 2000000);
         if (winCount == MaxWindows) {
             document.getElementById('Addbtn').classList.add("not_accessible");
         }
@@ -260,12 +259,13 @@ async function RemoveView(evlement, doDelete) {
     const miniviewCount = document.getElementById('miniViewContainer').childElementCount;
     if (viewCont.childElementCount - miniviewCount > 1) {
         view.classList.add('minimized');
-        await Delay(100);
-        /*await function(trtue){*/
+        
         if (!doDelete) {
             MiniView(evlement)
         }
+        
         else {
+            await Delay(1000);
             viewCont.removeChild(view);
         }
         if (viewCont.childElementCount == (MaxWindows - 1)) {

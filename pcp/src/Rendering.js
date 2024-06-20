@@ -71,7 +71,7 @@ function RenderFileOnCanvas(files, canvas,) {
         }
     }
     for (var i = 0; i < files.length; i++) {
-        const a = i;
+        const a = i; // This may look stupid, but listen: onload is an event that is fired after the loop already counted 'i' up to 1 ... it doesn't count the 'a' up though
         const reader = new FileReader();
         const PointsMaterial = new THREE.PointsMaterial({ color:  pointclr.value, size: pointsize.value / 500000 });
         reader.readAsDataURL(files[i]);
