@@ -30,7 +30,7 @@ function RenderFileOnCanvas(files, canvas,) {
     Points.add(P3);
     scene.add(Points);
     var PCounter = 1;
-    const rotate = canvas.parentNode.querySelector('[name="rotate"]');
+    //const rotate = canvas.parentNode.querySelector('[name="rotate"]');
     const raycaster = new THREE.Raycaster();
     raycaster.params.Points.threshold = 0.1
     const pointer = new THREE.Vector2();

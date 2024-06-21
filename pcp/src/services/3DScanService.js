@@ -28,7 +28,32 @@ class ScanService {
         const response = await fetch(`${this.baseUrl}/Import3dScan`, {
             method: 'POST',
             body: formData
-        });
+        }).then(response => response.text())
+            .then(data => {
+                console.log(data);
+            });
+
+        //if (!response.ok) {
+        //    throw new Error(`HTTP error! Status: ${response.status}`);
+        //}
+
+        return response;
+    }
+
+    async PickPointsMerge(points) {
+        const myheader = new Headers();
+        myheader.append("Content-Type", "application/json");
+        const response = await fetch(`${this.baseUrl}/eg`, {
+            method: 'POST',
+            headers: myheader,
+            body: points,
+            redirect: "follow"
+        }).then(response => response.text())
+            .then(data => {
+                console.log(data);
+            });
+        console.log(response)
+
 
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -37,34 +62,13 @@ class ScanService {
         return response;
     }
 
-    async merge3DScans(files) {
-
-        console.log(files)
-        const response = await fetch(`${this.baseUrl}/merge3DScans`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-
-            },
-            body: JSON.stringify({ files: files })
-        });
-        console.log(response)
-
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        return response.json();
-    }
-
-    async export3DScan(points) {
-        const response = await fetch(`${this.baseUrl}/export3DScan`, {
+    async ICPmerge() {
+        const response = await fetch(`${this.baseUrl}/mergeImportedFiles`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ points })
+            /*body: */
         });
 
         if (!response.ok) {

@@ -70,17 +70,18 @@ async function Combine() {
     if (errormsg) { AddToDialog(errormsg) }
     else {
         const files = [];
-        const PickPoints = [];
+        var PickPoints = '';
         for (const imp of document.querySelectorAll('[type="file"]')) {
             const canvas = imp.parentNode.parentNode.querySelector('canvas');
             if (imp.files[0] && canvas.textContent != '' && files.length <3) {
                 files.push(imp.files[0]);
-                PickPoints.push(canvas.textContent);
+                PickPoints += canvas.textContent;
                 MiniView(imp);
                 canvas.textContent = '';
             }
         }
-        //scanService.export3DScan(PickPoints)
+        const resp = scanService.PickPointsMerge(PickPoints)
+        resp.onload = AddToDialog(resp);
 
         AddView(files);
 
@@ -183,7 +184,8 @@ async function ImportFile(eventtarget) {
             // Modified By Audrik --- 
             try {
                 const response = await scanService.Import3dScan(file[0]);
-                console.log('File successfully uploaded and validated:', response);
+                console.log('File successfully uploaded and validated:');
+                //response.onload = AddToDialog(response.text());
                 AddToDialog(`File successfully uploaded and validated`);
                 //const text = await response.text(); // Hier wird der Text korrekt ausgelesen
                 //console.log(text);
@@ -258,8 +260,10 @@ async function RemoveView(evlement, doDelete) {
     
     var dias = ["...", "You can't do this...", "...", ".......", "You don't want to do this", "...", "...", "...", "We are protecting you from the vast nothing, the eternal blindness of ceasing matter, the uncomprehendable darkness of the never ending light...", "...", "...", "..", ".", ""];
     var viewCont = document.getElementById("objViewCont");
-    const miniviewCount = document.getElementById('miniViewContainer').childElementCount;
-    if (viewCont.childElementCount - miniviewCount > 1) {
+    const miniviewCont = document.getElementById('miniViewContainer');
+    const mvcount = miniviewCont.childElementCount;
+    if (viewCont.childElementCount - mvcount > 1 || mvcount > 0) {
+        if (viewCont.childElementCount - mvcount == 1) { miniviewCont.childNodes[0].click() }
         view.classList.add('minimized');
         
         if (!doDelete) {
@@ -273,7 +277,7 @@ async function RemoveView(evlement, doDelete) {
         if (viewCont.childElementCount == (MaxWindows - 1)) {
             document.getElementById('Addbtn').classList.remove("not_accessible");
         }
-        if (viewCont.childElementCount - miniviewCount == 1) {
+        if (viewCont.childElementCount - mvcount == 1) {
             viewCont.querySelector('.closeBtn').classList.add("not_accessible");
             viewCont.querySelector('.miniBtn').classList.add("not_accessible");
         }

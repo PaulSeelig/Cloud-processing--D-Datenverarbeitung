@@ -173,6 +173,37 @@ int main()
 				res.add_header("Access-Control-Allow-Origin", URL);
 				return res;
 			});
+	
+	CROW_ROUTE(app, "/eg").methods(crow::HTTPMethod::OPTIONS)(
+		[URL](const crow::request& req) {
+
+			crow::response res;
+			res.add_header("Access-Control-Allow-Headers", "Content-Type");
+			res.add_header("Access-Control-Allow-Origin", URL);
+			res.add_header("Access-Control-Allow-Methods", "POST, OPTIONS");
+
+			// Handle preflight requests
+				res.code = 200;
+				return res;
+			});
+	CROW_ROUTE(app, "/eg").methods(crow::HTTPMethod::Post)(
+		[URL](const crow::request& req) {
+		
+			crow::response res;
+			res.add_header("Access-Control-Allow-Headers", "Content-Type");
+			res.add_header("Access-Control-Allow-Origin", URL);
+			res.add_header("Access-Control-Allow-Methods", "POST, OPTIONS");
+
+			// Handle preflight requests
+			if (req.method == crow::HTTPMethod::OPTIONS) {
+				res.code = 200;
+				return res;
+			}
+			res.add_header("Access-Control-Allow-Headers", "Content-Type");
+			res.add_header("Access-Control-Allow-Origin", URL);
+			res.code = 200; // Success
+			return res;
+		});
 
 	//Pointpicking Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/pointsPicked").methods(crow::HTTPMethod::POST)
@@ -185,7 +216,15 @@ int main()
 				crow::response res;
 
 				//Headers:
+				res.add_header("Access-Control-Allow-Headers", "Content-Type");
 				res.add_header("Access-Control-Allow-Origin", URL);
+				res.add_header("Access-Control-Allow-Methods", "POST, OPTIONS");
+
+				// Handle preflight requests
+				if (req.method == crow::HTTPMethod::OPTIONS) {
+					res.code = 200;
+					return res;
+				}
 
 				pcl::PointCloud<pcl::PointXYZ>::Ptr source_points(new pcl::PointCloud<pcl::PointXYZ>());
 				pcl::PointCloud<pcl::PointXYZ>::Ptr target_points(new pcl::PointCloud<pcl::PointXYZ>());
@@ -198,17 +237,17 @@ int main()
 				catch (const std::exception& e)
 				{
 					res.body = e.what();
-					res.code = 400;
+					res.code = 200;
 					return res;
 				}
 
-				//Test if the size is 6 to catch size errors
-				if (pickedPoints.size() != 6)
+				//Test if the size is 6 to catch size errors 
+				/*if (pickedPoints.count() != 6)
 				{
 					res.body = "There is a missmatch between the selected Points";
-					res.code = 400;
+					res.code = 200;
 					return res;
-				}
+				}*/
 
 				//Extraction of pickedPoints from the JSON Object
 				for (int i = 0; i < pickedPoints.size(); i++)
@@ -223,7 +262,7 @@ int main()
 					}
 					catch (const std::exception& e) 
 					{
-						return crow::response(400, "Error extracting point data: " + std::string(e.what()));
+						return crow::response(200, "Error extracting point data: " + std::string(e.what()));
 					}
 
 					// To differentiate the 2 picked Points
@@ -258,6 +297,7 @@ int main()
 				json_matrix["matrix"] = std::move(matrix_array);
 
 				res.body = json_matrix.dump();
+				res.code = 200;
 
 				return res;
 			});
