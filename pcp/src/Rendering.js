@@ -135,7 +135,7 @@ function RenderFileOnCanvas(files, canvas,) {
         
         renderer.render(scene, camera);
 
-        if (rotate.checked) { scene.rotation.z = 0.00025 * time; }
+        //if (rotate.checked) { scene.rotation.z = 0.00025 * time; }
 
         requestAnimationFrame(render);
     }
