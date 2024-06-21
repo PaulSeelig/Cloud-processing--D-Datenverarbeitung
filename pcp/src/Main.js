@@ -116,7 +116,7 @@ function MiniView(evlement) {
     if (view.title == "") { RemoveView(evlement, true); }
     else {
         view.classList.add('minimized');
-        view.querySelector('.rotateBtn').checked = false;
+        //view.querySelector('.rotateBtn').checked = false;
         const btn = document.createElement("button");
         btn.innerHTML = view.title;
         btn.addEventListener("click", function () {
@@ -198,14 +198,16 @@ async function ImportFile(eventtarget) {
 }
 
 function visualFile(objView, files) {
-    //const files = filetwo? [file, filetwo] : [file]
-    objView.title = files.length < 2 ? files[0].name : "CombineView: " + files[0].name + " + " + files[1].name;
-    for (let i = 0; i < files.length - 1; i++) {
+    objView.title = files.length == 1 ? files[0].name : "CombineView: " + files[0].name + " + " + files[1].name;
+    const h2 = objView.querySelector('h2');
+    h2.innerHTML = files[0].name;
+    if(files.length == 2){
         const optionmenuContent = objView.querySelector('.Open_Further_Options_Container');
-        const before = optionmenuContent.childNodes[5];
-        optionmenuContent.insertBefore(optionmenuContent.querySelector('.rotateBtn').cloneNode(true), before);
-        optionmenuContent.insertBefore(optionmenuContent.querySelector('.color').cloneNode(true), before);
-        optionmenuContent.insertBefore(optionmenuContent.querySelector('.pointsize').cloneNode(true), before);
+        const h2_2 = h2.cloneNode(true);
+        h2_2.innerHTML = files[1].name;
+        optionmenuContent.appendChild(h2_2);
+        optionmenuContent.appendChild(optionmenuContent.querySelector('[name="model-color"]').cloneNode(true));
+        optionmenuContent.appendChild(optionmenuContent.querySelector('[name="pt-size"]').cloneNode(true));
     }
     const canvas = objView.querySelector('canvas');
     objView.querySelector('.hint').classList.add("hidden");
