@@ -174,37 +174,6 @@ int main()
 				return res;
 			});
 	
-	CROW_ROUTE(app, "/eg").methods(crow::HTTPMethod::OPTIONS)(
-		[URL](const crow::request& req) {
-
-			crow::response res;
-			res.add_header("Access-Control-Allow-Headers", "Content-Type");
-			res.add_header("Access-Control-Allow-Origin", URL);
-			res.add_header("Access-Control-Allow-Methods", "POST, OPTIONS");
-
-			// Handle preflight requests
-				res.code = 200;
-				return res;
-			});
-	CROW_ROUTE(app, "/eg").methods(crow::HTTPMethod::Post)(
-		[URL](const crow::request& req) {
-		
-			crow::response res;
-			res.add_header("Access-Control-Allow-Headers", "Content-Type");
-			res.add_header("Access-Control-Allow-Origin", URL);
-			res.add_header("Access-Control-Allow-Methods", "POST, OPTIONS");
-
-			// Handle preflight requests
-			if (req.method == crow::HTTPMethod::OPTIONS) {
-				res.code = 200;
-				return res;
-			}
-			res.add_header("Access-Control-Allow-Headers", "Content-Type");
-			res.add_header("Access-Control-Allow-Origin", URL);
-			res.code = 200; // Success
-			return res;
-		});
-
 	//Pointpicking Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/pointsPicked").methods(crow::HTTPMethod::POST)
 		([URL](const crow::request& req)
@@ -218,13 +187,7 @@ int main()
 				//Headers:
 				res.add_header("Access-Control-Allow-Headers", "Content-Type");
 				res.add_header("Access-Control-Allow-Origin", URL);
-				res.add_header("Access-Control-Allow-Methods", "POST, OPTIONS");
-
-				// Handle preflight requests
-				if (req.method == crow::HTTPMethod::OPTIONS) {
-					res.code = 200;
-					return res;
-				}
+				res.add_header("Access-Control-Allow-Methods", "POST");
 
 				pcl::PointCloud<pcl::PointXYZ>::Ptr source_points(new pcl::PointCloud<pcl::PointXYZ>());
 				pcl::PointCloud<pcl::PointXYZ>::Ptr target_points(new pcl::PointCloud<pcl::PointXYZ>());
@@ -262,7 +225,7 @@ int main()
 					}
 					catch (const std::exception& e) 
 					{
-						return crow::response(200, "Error extracting point data: " + std::string(e.what()));
+						return crow::response(400, "Error extracting point data: " + std::string(e.what()));
 					}
 
 					// To differentiate the 2 picked Points
@@ -298,7 +261,23 @@ int main()
 
 				res.body = json_matrix.dump();
 				res.code = 200;
+				res.add_header("Content-Type", "application/json");
 
+				return res;
+			});
+
+	// Handle OPTIONS requests for CORS preflight
+	CROW_ROUTE(app, "/pointsPicked").methods("OPTIONS"_method)
+		([URL](const crow::request& req)
+			{
+				crow::response res;
+
+				// Set CORS headers
+				res.add_header("Access-Control-Allow-Origin", URL);
+				res.add_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+				res.add_header("Access-Control-Allow-Headers", "Content-Type");
+
+				// Respond with no content for OPTIONS requests
 				return res;
 			});
 

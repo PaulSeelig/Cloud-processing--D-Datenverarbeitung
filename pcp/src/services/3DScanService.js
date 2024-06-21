@@ -43,7 +43,7 @@ class ScanService {
     async PickPointsMerge(points) {
         const myheader = new Headers();
         myheader.append("Content-Type", "application/json");
-        const response = await fetch(`${this.baseUrl}/eg`, {
+        const response = await fetch(`${this.baseUrl}/pointsPicked`, {
             method: 'POST',
             headers: myheader,
             body: points,
