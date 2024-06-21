@@ -8,6 +8,7 @@
 
 //The Crow relevent headers
 #include "crow.h" //this needs to be replaced when using Linux to #include "crow_all.h"
+//#include "crow_all.h"
 #include <crow/json.h>
 #include <crow/multipart.h>
 #include <crow/middlewares/cors.h>
@@ -109,8 +110,6 @@ int main()
 	);
 	//--------------------------
 
-
-
 	//Delete Handler to delete saved point clouds
 	CROW_ROUTE(app, "/delete3DFiles").methods(crow::HTTPMethod::Delete)
 		([&source_points, &target_points](const crow::request& req)
@@ -140,10 +139,18 @@ int main()
 				//test to see if its a json object
 				try {
 					recievedData = crow::json::load(req.body);
+
+					if (!recievedData) {
+						return crow::response(400, "Invalid JSON format");
+					}
 				}
 				catch (const std::exception& e) {
-					return crow::response(400); //wrong data type
+					return crow::response(400, e.what()); //wrong data type
 				}
+				//Logic for getting the last transformation Matrix goes here
+
+				//The transformationmatrix is used on one of the point clouds
+				
 				//Innitialization of icp and inputting the pointclouds
 				pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
 				icp.setInputSource(source_points);
@@ -152,17 +159,20 @@ int main()
 				//the transformation into a Final "Output" Pointcloud
 				icp.align(*final_points);
 
-				//std::cout << "ICP has " << (icp.hasConverged() ? "converged" : "not converged") << ", score: " << icp.getFitnessScore() << std::endl;
-				//std::cout << icp.getFinalTransformation() << std::endl;
+				//icp.hasConverged() //maybe needed to send feedback to Client
+				//icp.getFinalTransformation()  //returns final transformation
 
-				//Crow Response
+				//Crow json return object
 				crow::json::wvalue response;
+
+				//Put stuff here to convert transformation to json
 				response["message"] = "not implemented yet";
+
+				//Crow response
 				crow::response res(response);
 				res.add_header("Access-Control-Allow-Origin", URL);
 				return res;
 			});
-
 
 	//Pointpicking Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/pointsPicked").methods(crow::HTTPMethod::POST)
@@ -170,6 +180,12 @@ int main()
 			{
 				//Innitialization and subsequent conversion from Points picked to Pointclouds
 				crow::json::rvalue pickedPoints;
+
+				//Initialize Response
+				crow::response res;
+
+				//Headers:
+				res.add_header("Access-Control-Allow-Origin", URL);
 
 				pcl::PointCloud<pcl::PointXYZ>::Ptr source_points(new pcl::PointCloud<pcl::PointXYZ>());
 				pcl::PointCloud<pcl::PointXYZ>::Ptr target_points(new pcl::PointCloud<pcl::PointXYZ>());
@@ -181,24 +197,45 @@ int main()
 				}
 				catch (const std::exception& e)
 				{
-					return crow::response(400);
+					res.body = e.what();
+					res.code = 400;
+					return res;
 				}
 
 				//Test if the size is 6 to catch size errors
 				if (pickedPoints.size() != 6)
 				{
-					return crow::response(400, "There is a missmatch between the selected Points");
+					res.body = "There is a missmatch between the selected Points";
+					res.code = 400;
+					return res;
 				}
 
-				//Here is where the filling of the pointclouds will happen
+				//Extraction of pickedPoints from the JSON Object
 				for (int i = 0; i < pickedPoints.size(); i++)
 				{
-					//source_points->points.push_back(); //i need to see how the json object loo
-					//to differentiate the 2 picked Points
-					if (((pickedPoints.size() - 1) / 2) > i)
+					pcl::PointXYZ tempPoint;
+
+					try 
 					{
-						//how to extract the exact thingys -> pcl::PointXYZ(x,y,z); //float!
-						//target_points->points.push_back();
+						tempPoint.x = pickedPoints[i]["x"].d();
+						tempPoint.y = pickedPoints[i]["y"].d();
+						tempPoint.z = pickedPoints[i]["z"].d();
+					}
+					catch (const std::exception& e) 
+					{
+						return crow::response(400, "Error extracting point data: " + std::string(e.what()));
+					}
+
+					// To differentiate the 2 picked Points
+					if (i < pickedPoints.size() / 2) 
+					{
+						// The first half goes to the source points
+						source_points->points.push_back(tempPoint);
+					}
+					else 
+					{
+						// The second half goes to the target points
+						target_points->points.push_back(tempPoint);
 					}
 				}
 
@@ -206,7 +243,7 @@ int main()
 				pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ> trans_est;
 				pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation;
 				trans_est.estimateRigidTransformation(*source_points, *target_points, transformation);
-
+				
 				//response transformation matrix
 				crow::json::wvalue json_matrix;
 				crow::json::wvalue::list matrix_array;
@@ -220,11 +257,7 @@ int main()
 
 				json_matrix["matrix"] = std::move(matrix_array);
 
-				//Initialize Response
-				crow::response res(json_matrix);
-
-				//Headers:
-				res.add_header("Access-Control-Allow-Origin", URL);
+				res.body = json_matrix.dump();
 
 				return res;
 			});
