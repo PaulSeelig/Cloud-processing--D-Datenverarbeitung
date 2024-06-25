@@ -70,20 +70,29 @@ async function Combine() {
     if (errormsg) { AddToDialog(errormsg) }
     else {
         const files = [];
-        var PickPoints = '';
+        var PickPoints = []; 
+
+    //var PickPoints = [{\"x\":6,\"y\":-6,\"z\":6}",
+    //"{\"x\":62.22139382039342,\"y\":-62.82691743936805,\"z\":63.77745571848427}",
+    //"{\"x\":55.998561179303195,\"y\":-65.6084849243457,\"z\":61.23711709757558}",
+    //"{\"x\":76.37649521995922,\"y\":-48.2331414446992,\"z\":64.92625224043294}",
+    //"{\"x\":73.3902218136569,\"y\":-52.63148160458081,\"z\":58.956560416240286}",
+    //"{\"x\":74.92758475256248,\"y\":-50.391337182267236,\"z\":59.744180986219554}];
         for (const imp of document.querySelectorAll('[type="file"]')) {
             const canvas = imp.parentNode.parentNode.querySelector('canvas');
-            if (imp.files[0] && canvas.textContent != '' && files.length <3) {
+            if (imp.files[0] && canvas.textContent != '' && files.length < 3) {
+                var pp = JSON.parse(canvas.textContent)
                 files.push(imp.files[0]);
-                PickPoints += canvas.textContent;
+                PickPoints.push(pp[0], pp[1], pp[2]);
                 MiniView(imp);
                 canvas.textContent = '';
             }
         }
-        const resp = scanService.PickPointsMerge(PickPoints)
-        resp.onload = AddToDialog(resp);
-
-        AddView(files);
+        const js = JSON.stringify(PickPoints);
+        scanService.PickPointsMerge(js).then(resp => {
+            AddToDialog(resp)
+            AddView(files, resp);
+        });
 
         AddToDialog("Not fully Implemented Yet ... As u can c")
     }
