@@ -179,10 +179,11 @@ int main()
 		([URL](const crow::request& req)
 			{
 				//Innitialization and subsequent conversion from Points picked to Pointclouds
-				crow::json::rvalue pickedPoints;
+				
 
 				//Initialize Response
 				crow::response res;
+				crow::json::rvalue pickedPoints;
 
 				//Headers:
 				res.add_header("Access-Control-Allow-Headers", "Content-Type");
@@ -195,7 +196,7 @@ int main()
 				//Test if the send object is a Json Obj
 				try
 				{
-					pickedPoints = crow::json::load(req.body);
+					 pickedPoints = crow::json::load(req.body);
 				}
 				catch (const std::exception& e)
 				{
@@ -213,7 +214,7 @@ int main()
 				}*/
 
 				//Extraction of pickedPoints from the JSON Object
-				for (int i = 0; i < pickedPoints.size(); i++)
+				for (int i = 0; i < 6; i++)
 				{
 					pcl::PointXYZ tempPoint;
 
@@ -229,7 +230,7 @@ int main()
 					}
 
 					// To differentiate the 2 picked Points
-					if (i < pickedPoints.size() / 2) 
+					if (i < 3) 
 					{
 						// The first half goes to the source points
 						source_points->points.push_back(tempPoint);

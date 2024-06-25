@@ -39,11 +39,10 @@ function RenderFileOnCanvas(files, canvas,) {
         const rect = canvas.getBoundingClientRect();
         pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
         pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-        function SetPoint(P, intersect)
-        {
+        function SetPoint(P, intersect) {
             P.position.copy(intersect.point);
             PCounter++;
-            canvas.textContent = PCounter > 3 ? JSON.stringify(P1.position) + JSON.stringify(P2.position) + JSON.stringify(P3.position) : '';
+            canvas.textContent = PCounter > 3 ? JSON.stringify([P1.position, P2.position, P3.position ]) : '';
         }
 
         if (D3_Mesh) {

@@ -41,25 +41,25 @@ class ScanService {
     }
 
     async PickPointsMerge(points) {
+        var answer = "";
         const myheader = new Headers();
         myheader.append("Content-Type", "application/json");
-        const response = await fetch(`${this.baseUrl}/pointsPicked`, {
+        await fetch(`${this.baseUrl}/pointsPicked`, {
             method: 'POST',
-            headers: myheader,
             body: points,
             redirect: "follow"
         }).then(response => response.text())
             .then(data => {
-                console.log(data);
+                answer = data;
             });
-        console.log(response)
+        //console.log(response)
 
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        //if (!response.ok) {
+        //    throw new Error(`HTTP error! Status: ${response.status}`);
+        //}
 
-        return response;
+        return answer;
     }
 
     async ICPmerge() {
