@@ -71,13 +71,7 @@ async function Combine() {
     else {
         const files = [];
         var PickPoints = []; 
-
-    //var PickPoints = [{\"x\":6,\"y\":-6,\"z\":6}",
-    //"{\"x\":62.22139382039342,\"y\":-62.82691743936805,\"z\":63.77745571848427}",
-    //"{\"x\":55.998561179303195,\"y\":-65.6084849243457,\"z\":61.23711709757558}",
-    //"{\"x\":76.37649521995922,\"y\":-48.2331414446992,\"z\":64.92625224043294}",
-    //"{\"x\":73.3902218136569,\"y\":-52.63148160458081,\"z\":58.956560416240286}",
-    //"{\"x\":74.92758475256248,\"y\":-50.391337182267236,\"z\":59.744180986219554}];
+       
         for (const imp of document.querySelectorAll('[type="file"]')) {
             const canvas = imp.parentNode.parentNode.querySelector('canvas');
             if (imp.files[0] && canvas.textContent != '' && files.length < 3) {
@@ -91,7 +85,8 @@ async function Combine() {
         const js = JSON.stringify(PickPoints);
         scanService.PickPointsMerge(js).then(resp => {
             AddToDialog(resp)
-            AddView(files, resp);
+            const tMatrix = JSON.parse(resp);
+            AddView(files, tMatrix);
         });
 
         AddToDialog("Not fully Implemented Yet ... As u can c")
@@ -146,7 +141,7 @@ function Delay(milliseconds) {
  * if combineFile is a file and not null, it will be displayed in the new viewWindow
  * @param {any} combineFile
  */
-async function AddView(combineFiles) {
+async function AddView(combineFiles, tMatrix) {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
     var winCount = viewcont.childElementCount;
     if (winCount < MaxWindows || combineFiles) {
@@ -156,7 +151,7 @@ async function AddView(combineFiles) {
         }
         const viewclone = clone.cloneNode(true);
         if (combineFiles) {
-            visualFile(viewclone, combineFiles);
+            visualFile(viewclone, combineFiles, tMatrix);
         }
         viewcont.appendChild(viewclone);
         AssignBtns();
@@ -208,7 +203,7 @@ async function ImportFile(eventtarget) {
     }
 }
 
-function visualFile(objView, files) {
+function visualFile(objView, files, tMatrix) {
     objView.title = files.length == 1 ? files[0].name : "CombineView: " + files[0].name + " + " + files[1].name;
     const h2 = objView.querySelector('h2');
     h2.innerHTML = files[0].name;
@@ -222,7 +217,7 @@ function visualFile(objView, files) {
     }
     const canvas = objView.querySelector('canvas');
     objView.querySelector('.hint').classList.add("hidden");
-    files.onload = RenderFileOnCanvas(files, canvas);
+    files.onload = RenderFileOnCanvas(files, canvas, tMatrix);
 }
 /**
  * takes a string or similar and displays it in the website
@@ -236,14 +231,6 @@ function AddToDialog(diamessage) {
         document.querySelector('#Dialog').classList.remove('minimized');
     }
 }
-
-//function ClearDialog() {
-//    document.querySelector('#Dialog p').innerHTML = "";
-//    DialogLine = 1;
-//    if (document.querySelectorAll('#Dialog.minimized').length > 0) {
-//        document.querySelector('#Dialog').classList.remove('minimized');
-//    }
-//}
 function HideShowOptions(optionsBtnCheck) {
     const optionsCont = optionsBtnCheck.parentNode.parentNode.querySelector('.Open_Further_Options_Container');
     if (optionsBtnCheck.checked) {
@@ -278,7 +265,6 @@ async function RemoveView(evlement, doDelete) {
         if (!doDelete) {
             MiniView(evlement)
         }
-        
         else {
             await Delay(1000);
             viewCont.removeChild(view);
@@ -290,32 +276,10 @@ async function RemoveView(evlement, doDelete) {
             viewCont.querySelector('.closeBtn').classList.add("not_accessible");
             viewCont.querySelector('.miniBtn').classList.add("not_accessible");
         }
-
     }
     else {
         AddToDialog(dias[dialin]);
         dialin += dialin < (dias.length - 1) ? 1 : 0;
     }
-
 }
-
-/**
- * this function clear both frontend and backend buffer
- */
-//async function ClearViews() {
-
-//    try {
-//        //await scanService.Delete3DFiles();
-//        location.reload(true)
-//        console.log('Files successfully Deleted:');
-//        AddToDialog(`File successfully Deleted`);
-//    }
-//    catch (error) {
-//        console.error('Error Deleting files:', error);
-//        AddToDialog(`Error Deleting files: ${error.message}`);
-//    }
-
-//}
-
-
 window.addEventListener("load", setup);

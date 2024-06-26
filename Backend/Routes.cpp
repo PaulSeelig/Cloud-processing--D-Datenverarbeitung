@@ -205,14 +205,6 @@ int main()
 					return res;
 				}
 
-				//Test if the size is 6 to catch size errors 
-				/*if (pickedPoints.count() != 6)
-				{
-					res.body = "There is a missmatch between the selected Points";
-					res.code = 200;
-					return res;
-				}*/
-
 				//Extraction of pickedPoints from the JSON Object
 				for (int i = 0; i < 6; i++)
 				{
@@ -267,20 +259,20 @@ int main()
 				return res;
 			});
 
-	// Handle OPTIONS requests for CORS preflight
-	CROW_ROUTE(app, "/pointsPicked").methods("OPTIONS"_method)
-		([URL](const crow::request& req)
-			{
-				crow::response res;
+	//// Handle OPTIONS requests for CORS preflight
+	//CROW_ROUTE(app, "/pointsPicked").methods("OPTIONS"_method)
+	//	([URL](const crow::request& req)
+	//		{
+	//			crow::response res;
 
-				// Set CORS headers
-				res.add_header("Access-Control-Allow-Origin", URL);
-				res.add_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-				res.add_header("Access-Control-Allow-Headers", "Content-Type");
+	//			// Set CORS headers
+	//			res.add_header("Access-Control-Allow-Origin", URL);
+	//			res.add_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+	//			res.add_header("Access-Control-Allow-Headers", "Content-Type");
 
-				// Respond with no content for OPTIONS requests
-				return res;
-			});
+	//			// Respond with no content for OPTIONS requests
+	//			return res;
+	//		});
 
 	//Starts the server
 	app.port(18080).multithreaded().run();

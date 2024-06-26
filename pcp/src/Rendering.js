@@ -6,8 +6,8 @@ import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 //import Stats from 'three/addons/libs/stats.module.js';
 
 import AddScene from './AddScene';
-function RenderFileOnCanvas(files, canvas,) {
-
+function RenderFileOnCanvas(files, canvas, tMatrix) {
+    tMatrix ? tMatrix = tMatrix.matrix : '';
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas, alpha: true });
     renderer.setClearColor(0x000000, 0);
     const { scene, camera } = AddScene();
@@ -85,6 +85,12 @@ function RenderFileOnCanvas(files, canvas,) {
                 geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
                 geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
                 a == 0 ? D3_Mesh = new THREE.Points(geometry, PointsMaterial)  : D3_Mesh2 = new THREE.Points(geometry, PointsMaterial) ;
+                
+                if (a == 1 && tMatrix) {
+                    ////D3_Mesh.matrix.set(tMatrix[0], tMatrix[1], tMatrix[2], tMatrix[3], tMatrix[4], tMatrix[5], tMatrix[6], tMatrix[7], tMatrix[8], tMatrix[9], tMatrix[10], tMatrix[11], tMatrix[12], tMatrix[13], tMatrix[14], tMatrix[15]);
+                    const matrix4 = new THREE.Matrix4().fromArray(tMatrix);
+                    D3_Mesh2.applyMatrix4(matrix4);
+                }
                 scene.add(a == 0 ? D3_Mesh : D3_Mesh2);
             }
 
@@ -124,6 +130,8 @@ function RenderFileOnCanvas(files, canvas,) {
             renderer.clear(true, true);
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
+
+            
             camera.updateProjectionMatrix();
         }
 
