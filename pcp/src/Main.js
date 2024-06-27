@@ -62,30 +62,33 @@ function CheckCombineConditions()
     }
 }
 async function Combine() {
+    
     const errormsg = CheckCombineConditions();
     if (errormsg) { AddToDialog(errormsg) }
     else {
+
         const files = [];
         var PickPoints = []; 
        
         for (const imp of document.querySelectorAll('[type="file"]')) {
             const canvas = imp.parentNode.parentNode.querySelector('canvas');
             if (imp.files[0] && canvas.textContent != '' && files.length < 3) {
-                var pp = JSON.parse(canvas.textContent)
+                var pp = JSON.parse(canvas.textContent);
                 files.push(imp.files[0]);
                 PickPoints.push(pp[0], pp[1], pp[2]);
                 MiniView(imp);
-                canvas.textContent = '';
             }
         }
+
+        const title = "CombineView: " + files[0].name + " + " + files[1].name;
+        var view = null;
+        for (const objView of document.querySelectorAll('.objViewWin')) { title == objView.title ? view = objView : '' }
         const js = JSON.stringify(PickPoints);
         scanService.PickPointsMerge(js).then(resp => {
             AddToDialog(resp)
-            const tMatrix = JSON.parse(resp);
-            AddView(files, tMatrix);
+            view ? view.querySelector('canvas').textContent = resp : AddView(files, JSON.parse(resp));
         });
-
-        AddToDialog("Not fully Implemented Yet ... As u can c")
+        AddToDialog("Not fully Implemented Yet ... As u can c");
     }
 
 }

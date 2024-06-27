@@ -30,7 +30,7 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
     scene.add(Points);
     var PCounter = 1;
     const raycaster = new THREE.Raycaster();
-    raycaster.params.Points.threshold = 0.1
+    raycaster.params.Points.threshold = 1;
     const pointer = new THREE.Vector2();
     function onPointerClick(event) {
         event.preventDefault();
@@ -76,7 +76,9 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
             const geometry = new THREE.BufferGeometry();
             let positions = [];
             let colors = [];
-
+            function setMatrix(D3_Mesh, tMatrix) {
+                D3_Mesh.matrix.set(tMatrix[0], tMatrix[1], tMatrix[2], tMatrix[3], tMatrix[4], tMatrix[5], tMatrix[6], tMatrix[7], tMatrix[8], tMatrix[9], tMatrix[10], tMatrix[11], tMatrix[12], tMatrix[13], tMatrix[14], tMatrix[15]);
+                    }
             function handleGeometry(parsedGeometry) {
                 positions = parsedGeometry.attributes.position.array;
 
@@ -85,8 +87,23 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
                 a == 0 ? D3_Mesh = new THREE.Points(geometry, PointsMaterial)  : D3_Mesh2 = new THREE.Points(geometry, PointsMaterial) ;
                 
                 if (a == 0 && tMatrix) {
-                    D3_Mesh.matrix.set(tMatrix[0], tMatrix[1], tMatrix[2], tMatrix[3], tMatrix[4], tMatrix[5], tMatrix[6], tMatrix[7], tMatrix[8], tMatrix[9], tMatrix[10], tMatrix[11], tMatrix[12], tMatrix[13], tMatrix[14], tMatrix[15]);
-                    D3_Mesh.matrixAutoUpdate = false;
+                    setMatrix(D3_Mesh, tMatrix);
+                     D3_Mesh.matrixAutoUpdate = false;
+                    //canvas.parentNode.addEventListener("change", function (e) {
+                    //    tMatrix = JSON.parse(e.target.textContent);
+                    //    setMatrix(D3_Mesh, tMatrix);
+                    //});
+                    const observer = new MutationObserver(
+                        function (e) {
+                            tMatrix = JSON.parse(canvas.textContent);
+                            setMatrix(D3_Mesh, tMatrix.matrix);
+                        }
+                    );
+                    // Call 'observe' on the MutationObserver instance, specifying the element to observe
+                    observer.observe(canvas, { childList: true });
+
+                
+
                 }
                 scene.add(a == 0 ? D3_Mesh : D3_Mesh2);
             }
@@ -143,9 +160,10 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
 
         requestAnimationFrame(render);
     }
-
-    canvas.addEventListener('dblclick', onPointerClick);
-    canvas.addEventListener('contextmenu', onPointerClick);
+    if (files.length == 1) {
+        canvas.addEventListener('dblclick', onPointerClick);
+        canvas.addEventListener('contextmenu', onPointerClick);
+    }
     requestAnimationFrame(render);
 }
 export default RenderFileOnCanvas;
