@@ -9,13 +9,9 @@ const MaxWindows = 8;
 //Added By Audrik
 const scanService = new ScanService('http://localhost:18080');
 //-----------------------
-
 const clone = document.querySelector('#objViewCont .objViewWin').cloneNode(true);
-
-
-
 function setup() {
-    document.getElementById("Addbtn").addEventListener("click", nul => { AddView(null) });
+    document.getElementById("Addbtn").addEventListener("click", function () { AddView() }); // This is a stupid fix, don't touch it, unless ur solution really works ... Without the function(){ } the function is not working as a event but is executed once on setup;
     document.getElementById("combine").addEventListener("click", Combine);
 
     document.getElementById("saveBtn").addEventListener("click", SaveFile);
@@ -34,7 +30,7 @@ function setup() {
     clone.classList.add('minimized');
     AddToDialog("Good morning folks... ");
     AssignBtns();
-    AddView(null);
+    AddView();
     AddToDialog("Using this site:");
     AddToDialog("1st step: Add atleast 2 3D-files (only 1 per view) to the site");
     AddToDialog("2nd step: set each 3 Points on the Models (with right- or doubleclick)");
@@ -187,7 +183,7 @@ async function ImportFile(eventtarget) {
 
             // Modified By Audrik --- 
             try {
-                const response = await scanService.Import3dScan(file[0]);
+                await scanService.Import3dScan(file[0]);
                 console.log('File successfully uploaded and validated:');
                 //response.onload = AddToDialog(response.text());
                 AddToDialog(`File successfully uploaded and validated`);

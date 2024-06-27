@@ -3,7 +3,6 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { XYZLoader } from 'three/addons/loaders/XYZLoader.js';
 import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
-//import Stats from 'three/addons/libs/stats.module.js';
 
 import AddScene from './AddScene';
 function RenderFileOnCanvas(files, canvas, tMatrix) {
@@ -30,7 +29,6 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
     Points.add(P3);
     scene.add(Points);
     var PCounter = 1;
-    //const rotate = canvas.parentNode.querySelector('[name="rotate"]');
     const raycaster = new THREE.Raycaster();
     raycaster.params.Points.threshold = 0.1
     const pointer = new THREE.Vector2();
@@ -86,10 +84,9 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
                 geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
                 a == 0 ? D3_Mesh = new THREE.Points(geometry, PointsMaterial)  : D3_Mesh2 = new THREE.Points(geometry, PointsMaterial) ;
                 
-                if (a == 1 && tMatrix) {
-                    ////D3_Mesh.matrix.set(tMatrix[0], tMatrix[1], tMatrix[2], tMatrix[3], tMatrix[4], tMatrix[5], tMatrix[6], tMatrix[7], tMatrix[8], tMatrix[9], tMatrix[10], tMatrix[11], tMatrix[12], tMatrix[13], tMatrix[14], tMatrix[15]);
-                    const matrix4 = new THREE.Matrix4().fromArray(tMatrix);
-                    D3_Mesh2.applyMatrix4(matrix4);
+                if (a == 0 && tMatrix) {
+                    D3_Mesh.matrix.set(tMatrix[0], tMatrix[1], tMatrix[2], tMatrix[3], tMatrix[4], tMatrix[5], tMatrix[6], tMatrix[7], tMatrix[8], tMatrix[9], tMatrix[10], tMatrix[11], tMatrix[12], tMatrix[13], tMatrix[14], tMatrix[15]);
+                    D3_Mesh.matrixAutoUpdate = false;
                 }
                 scene.add(a == 0 ? D3_Mesh : D3_Mesh2);
             }
@@ -125,7 +122,7 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
         }
         return needResize;
     }
-    function render(time) {
+    function render() {
         if (resizeRendererToDisplaySize(renderer)) {
             renderer.clear(true, true);
             const canvas = renderer.domElement;

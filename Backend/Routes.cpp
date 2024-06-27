@@ -155,7 +155,7 @@ int main()
 
 				//Extracting the 4x4 Matrix from JSON Object
 				try {
-					auto matrixArray = receivedData["matrix"];
+					auto& matrixArray = receivedData["matrix"];
 
 					// Iterate over the 4x4 matrix in receivedData
 					for (int i = 0; i < 4; ++i) 
