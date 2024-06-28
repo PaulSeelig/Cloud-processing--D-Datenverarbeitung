@@ -11,7 +11,7 @@ const scanService = new ScanService('http://localhost:18080');
 //-----------------------
 const clone = document.querySelector('#objViewCont .objViewWin').cloneNode(true);
 function setup() {
-    document.getElementById("Addbtn").addEventListener("click", function () { AddView() }); // This is a stupid fix, don't touch it, unless ur solution really works ... Without the function(){ } the function is not working as a event but is executed once on setup;
+    document.getElementById("Addbtn").addEventListener("click", function () { AddView() }); // This is a stupid fix, don't touch it, unless ur solution really works ... Without the function(){ } the function is not working as a event but is executed once on setup.. idk why;
     document.getElementById("combine").addEventListener("click", Combine);
 
     document.getElementById("saveBtn").addEventListener("click", SaveFile);
@@ -61,15 +61,15 @@ function CheckCombineConditions()
         return files < 2 ? "You need as least two files" : PPoints < 2 ? "you need atleast two models with each three pickedpoints on them, the first two are used for combine" : null;
     }
 }
-async function Combine() {
-    
+function Combine() {
     const errormsg = CheckCombineConditions();
     if (errormsg) { AddToDialog(errormsg) }
     else {
 
         const files = [];
-        var PickPoints = []; 
-       
+        var PickPoints = [];
+        var canv = null ;
+        var canv2 = null;
         for (const imp of document.querySelectorAll('[type="file"]')) {
             const canvas = imp.parentNode.parentNode.querySelector('canvas');
             if (imp.files[0] && canvas.textContent != '' && files.length < 3) {
@@ -77,6 +77,9 @@ async function Combine() {
                 files.push(imp.files[0]);
                 PickPoints.push(pp[0], pp[1], pp[2]);
                 MiniView(imp);
+
+                !canv ? canv = canvas : canv2 = canvas;
+                
             }
         }
 
@@ -84,9 +87,25 @@ async function Combine() {
         var view = null;
         for (const objView of document.querySelectorAll('.objViewWin')) { title == objView.title ? view = objView : '' }
         const js = JSON.stringify(PickPoints);
-        scanService.PickPointsMerge(js).then(resp => {
-            AddToDialog(resp)
-            view ? view.querySelector('canvas').textContent = resp : AddView(files, JSON.parse(resp));
+        scanService.PickPointsMerge(js).then(resp =>
+        {
+            AddToDialog(resp);
+            if (view)
+            {
+                view.querySelector('canvas').textContent = resp;
+            }
+            else
+            {
+                AddView(files, JSON.parse(resp));
+
+                const observer = new MutationObserver(function () { Combine() });
+                const observer2 = new MutationObserver(function () { Combine() });
+                // Call 'observe' on the MutationObserver instance, specifying the element to observe
+                observer.observe(canv, { childList: true });
+
+                // Call 'observe' on the MutationObserver instance, specifying the element to observe
+                observer2.observe(canv2, { childList: true });
+            }
         });
         AddToDialog("Not fully Implemented Yet ... As u can c");
     }
@@ -117,8 +136,10 @@ function AssignBtns() {
  */
 function MiniView(evlement) {
     const view = evlement.parentNode.parentNode;
+    
     if (view.title == "") { RemoveView(evlement, true); }
-    else {
+    else if (!view.classList.contains('minimized'))
+    {
         view.classList.add('minimized');
         //view.querySelector('.rotateBtn').checked = false;
         const btn = document.createElement("button");

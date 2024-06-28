@@ -89,10 +89,6 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
                 if (a == 0 && tMatrix) {
                     setMatrix(D3_Mesh, tMatrix);
                      D3_Mesh.matrixAutoUpdate = false;
-                    //canvas.parentNode.addEventListener("change", function (e) {
-                    //    tMatrix = JSON.parse(e.target.textContent);
-                    //    setMatrix(D3_Mesh, tMatrix);
-                    //});
                     const observer = new MutationObserver(
                         function (e) {
                             tMatrix = JSON.parse(canvas.textContent);
