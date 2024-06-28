@@ -207,7 +207,7 @@ async function ImportFile(eventtarget) {
 
             // Modified By Audrik --- 
             try {
-                await scanService.Import3dScan(file[0]);
+                await scanService.Import3dScan(file[0], fileEnd);
                 console.log('File successfully uploaded and validated:');
                 //response.onload = AddToDialog(response.text());
                 AddToDialog(`File successfully uploaded and validated`);
@@ -271,21 +271,18 @@ var dialin = 0;
  * @param {any} doDelete
  */
 async function RemoveView(evlement, doDelete) {
-    const view = evlement.parentNode.parentNode;
-    
-    
+    const view = evlement.parentNode.parentNode;    
     var dias = ["...", "You can't do this...", "...", ".......", "You don't want to do this", "...", "...", "...", "We are protecting you from the vast nothing, the eternal blindness of ceasing matter, the uncomprehendable darkness of the never ending light...", "...", "...", "..", ".", ""];
     var viewCont = document.getElementById("objViewCont");
     const miniviewCont = document.getElementById('miniViewContainer');
     const mvcount = miniviewCont.childElementCount;
     if (viewCont.childElementCount - mvcount > 1 || mvcount > 0) {
         if (viewCont.childElementCount - mvcount == 1) { miniviewCont.childNodes[0].click() }
-        view.classList.add('minimized');
-        
         if (!doDelete) {
             MiniView(evlement)
         }
         else {
+            view.classList.add('minimized');
             await Delay(1000);
             viewCont.removeChild(view);
         }

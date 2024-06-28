@@ -46,7 +46,7 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
         if (D3_Mesh) {
             raycaster.setFromCamera(pointer, camera);
             //const intersects = raycaster.intersectObject(event.type == 'click' ? D3_Mesh : Points);
-            raycaster.params.Points.threshold = 1000000000;
+            //raycaster.params.Points.threshold = 1000000000;
             const P = raycaster.intersectObject(P1).length > 0 ? P1 : raycaster.intersectObject(P2).length > 0 ? P2 : raycaster.intersectObject(P3).length > 0 ? P3 : null;
             if (P) {
                 console.info(P.point + "removed to zero");
@@ -56,7 +56,7 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
             }
             else
             {
-                raycaster.params.Points.threshold = 0.1
+                //raycaster.params.Points.threshold = 0.1
                 const intersects = raycaster.intersectObject(D3_Mesh);
                 if (intersects.length > 0)
                 {

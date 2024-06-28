@@ -21,9 +21,11 @@ class ScanService {
     }
 
 
-    async Import3dScan(fileContent) {
+    async Import3dScan(file, fileEnd) {
         const formData = new FormData();
-        formData.append('File', fileContent);
+        formData.append('File', file);
+        formData.append('fileName', file.name)
+        formData.append('fileType', fileEnd)
 
         const response = await fetch(`${this.baseUrl}/Import3dScan`, {
             method: 'POST',
@@ -32,11 +34,6 @@ class ScanService {
             .then(data => {
                 console.log(data);
             });
-
-        //if (!response.ok) {
-        //    throw new Error(`HTTP error! Status: ${response.status}`);
-        //}
-
         return response;
     }
 
