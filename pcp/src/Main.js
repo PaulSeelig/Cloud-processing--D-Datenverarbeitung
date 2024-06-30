@@ -89,6 +89,7 @@ function Combine() {
         const js = JSON.stringify(PickPoints);
         scanService.PickPointsMerge(js).then(resp =>
         {
+            var resMerge = scanService.ICPmerge(resp)
             AddToDialog(resp);
             if (view)
             {
@@ -122,6 +123,7 @@ function AssignBtns() {
     //var importinput = document.querySelector('.objViewWin:last-child .import');
     //importinput.addEventListener("change", event => { ImportFile(event.target) });
     document.querySelector('.objViewWin:last-child input.dragndrop').addEventListener("change", event => { ImportFile(event.target) });
+    document.querySelector('.objViewWin:last-child .clearBtn').addEventListener("click", event => { RemoveFile(event.target) });
 
     document.querySelector('.objViewWin:last-child .Open_Further_Options').addEventListener("change", event => { HideShowOptions(event.target) });
      //document.querySelector('canvas').textContent.addEventListener("change", event => {
@@ -184,6 +186,26 @@ async function AddView(combineFiles, tMatrix) {
     else {
         AddToDialog("Sorry, you can't have more than " + MaxWindows + " Windows open");
     }
+}
+
+
+async function RemoveFile(evlement) {
+    try {
+        const view = evlement.parentNode.parentNode;
+
+        var res = await scanService.Delete3DFile(evlement)
+        var viewCont = document.getElementById("objViewCont");
+        await viewCont.removeChild(view);
+        Delay(1000)
+        await AddView(null);
+        AddToDialog(res)
+    }
+    catch (error) {
+        console.error('Error deleting file:', error);
+        AddToDialog(`Error deleting file: ${error.message}`);
+    }
+
+
 }
 /**
  * Takes files from html input elements and puts them in visualFile(objView, file)
