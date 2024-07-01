@@ -4,28 +4,25 @@ class ScanService {
     }
 
 
-    async Delete3DFiles() {
+    async Delete3DFile(file) {
+        var data_ = ""
+        const formData = new FormData();
+        await fetch(`${this.baseUrl}/delete3DFile`, {
+            method: 'POST',
+            body: formData
+        }).then(response => response.text())
+            .then(data => {
+                data_ = data
+                console.log(data);
+            });
 
-        const response = await fetch(`${this.baseUrl}/delete3DFiles`, {
-            method: 'DELETE', // HTTP method should be in uppercase
-            headers: {
-                'Content-Type': 'application/json', // Include headers if needed
-            }
-        });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        return response;
+        return data_;
     }
 
-
-    async Import3dScan(file, fileEnd) {
+    async Import3dScan(fileContent) {
         const formData = new FormData();
-        formData.append('File', file);
-        formData.append('fileName', file.name)
-        formData.append('fileType', fileEnd)
+        formData.append('File', fileContent);
 
         const response = await fetch(`${this.baseUrl}/Import3dScan`, {
             method: 'POST',
@@ -34,13 +31,12 @@ class ScanService {
             .then(data => {
                 console.log(data);
             });
+
         return response;
     }
 
     async PickPointsMerge(points) {
-        var answer = "";
-        const myheader = new Headers();
-        myheader.append("Content-Type", "application/json");
+        var answer = ""
         await fetch(`${this.baseUrl}/pointsPicked`, {
             method: 'POST',
             body: points,
@@ -49,18 +45,24 @@ class ScanService {
             .then(data => {
                 answer = data;
             });
+        //console.log(response)
 
+
+        //if (!response.ok) {
+        //    throw new Error(`HTTP error! Status: ${response.status}`);
+        //}
 
         return answer;
     }
 
-    async ICPmerge() {
+    async ICPmerge(matrix) {
+        const formData = new FormData();
+        formData.append('matrix', matrix);
+
         const response = await fetch(`${this.baseUrl}/mergeImportedFiles`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            /*body: */
+            body: formData,
+            mode: 'no-cors'
         });
 
         if (!response.ok) {
