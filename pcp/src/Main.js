@@ -107,7 +107,6 @@ function Combine() {
                 observer2.observe(canv2, { childList: true });
             }
         });
-        AddToDialog("Not fully Implemented Yet ... As u can c");
     }
 
 }

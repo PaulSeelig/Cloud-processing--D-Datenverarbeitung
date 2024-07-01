@@ -52,14 +52,17 @@ int main()
 				if (source_points->empty())
 				{
 					//Call load function
+					return crow::response(200, "File uploaded succesfully");
 				}
 				else if (target_points->empty())
 				{
 					//Call load function
+					return crow::response(200, "File uploaded succesfully");
 				}
 				else
 				{
 					//return that the shit is full
+					return crow::response(400, "Server Capacity at maximum, consider reloading the Site");
 				}
 			});
 
