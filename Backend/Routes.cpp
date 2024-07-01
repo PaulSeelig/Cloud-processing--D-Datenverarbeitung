@@ -38,78 +38,32 @@ int main()
 	//Output pointcloud
 	pcl::PointCloud<pcl::PointXYZ>::Ptr final_points(new pcl::PointCloud<pcl::PointXYZ>);
 
-	//Code Audrik ------------------------
+	//Saving of incoming Data as Pointclouds
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
-		[URL](const crow::request& req) {
-
-			// Get the content type from the request header
-			std::string content_type = req.get_header_value("Content-Type");
-
-			// Check if the content type is multipart/form-data
-			if (content_type.find("multipart/form-data") != std::string::npos) {
-				// Parse the request body as multipart/form-data
-				crow::multipart::message msg(req);
-
-				// Loop through the parts of the message
-				for (const auto& part : msg.parts) {
-					// Check if the part corresponds to the "File" field
-					// Extract the file content
-					std::string fileContent = part.body;
-
-					// Validate the file type
-					bool isValidFile = false;
-
-					// Check for PLY file
-					if (fileContent.find("ply") == 0) {
-						isValidFile = true;
-					}
-					// Check for XYZ file (simple heuristic: check for three columns of floats)
-					else if (fileContent.find("# line format @px @py @pz") == 0) {
-						// Validate XYZ content format
-						std::istringstream iss(fileContent);
-						std::string line;
-						std::getline(iss, line);  // Skip the header line
-						isValidFile = true;
-						while (std::getline(iss, line)) {
-							std::istringstream lineStream(line);
-							float x, y, z;
-							if (!(lineStream >> x >> y >> z)) {
-								isValidFile = false;
-								break;
-							}
-						}
-					}
-					// Check for STL file
-					else if (fileContent.find("solid") == 0 || fileContent.find("facet") != std::string::npos) {
-						isValidFile = true;
-					}
-
-					if (isValidFile) {
-						crow::response res(200, "Valid 3D file received");
-						res.add_header("Access-Control-Allow-Origin", URL);
-						return res;
-					}
-					else {
-						return crow::response(400, "Invalid 3D file format");
-					}
-
-					//crow::response res(200, "Data recieved");
-					//
-					//res.add_header("Access-Control-Allow-Origin", URL);
-					//// If valid, return the file content back
-					//return res;
+		[URL, source_points, target_points](const crow::request& req)
+			{
+				crow::multipart::message incomingData(req);
+				// Check if there's a file in the parts
+				if (incomingData.parts.size() == 0) {
+					return crow::response(400, "No file uploaded");
 				}
 
-				// If "File" part not found, return error response
-				return crow::response(400, "Missing or invalid file");
-			}
-			else {
-				// If content type is not multipart/form-data, return error response
-				return crow::response(400, "Invalid request format");
-			}
-		}
-	);
-	//--------------------------
+				//Check if target_points is empty
+				if (source_points->empty())
+				{
+					//Call load function
+				}
+				else if (target_points->empty())
+				{
+					//Call load function
+				}
+				else
+				{
+					//return that the shit is full
+				}
+				
+
+			});
 
 	//Delete Handler to delete saved point clouds
 	CROW_ROUTE(app, "/delete3DFiles").methods(crow::HTTPMethod::Delete)
@@ -120,6 +74,7 @@ int main()
 				target_points->clear();
 
 				//clear the saved Data possible PCD
+				
 				//checks if deleting was succesful and sends back the appropriete response
 				if (source_points->points.empty() && target_points->points.empty()) {
 					return crow::response("Point Clouds have been deleted");
@@ -297,21 +252,6 @@ int main()
 
 				return res;
 			});
-
-	//// Handle OPTIONS requests for CORS preflight
-	//CROW_ROUTE(app, "/pointsPicked").methods("OPTIONS"_method)
-	//	([URL](const crow::request& req)
-	//		{
-	//			crow::response res;
-
-	//			// Set CORS headers
-	//			res.add_header("Access-Control-Allow-Origin", URL);
-	//			res.add_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-	//			res.add_header("Access-Control-Allow-Headers", "Content-Type");
-
-	//			// Respond with no content for OPTIONS requests
-	//			return res;
-	//		});
 
 	//Starts the server
 	app.port(18080).multithreaded().run();
