@@ -61,13 +61,11 @@ int main()
 				{
 					//return that the shit is full
 				}
-				
-
 			});
 
 	//Delete Handler to delete saved point clouds
 	CROW_ROUTE(app, "/delete3DFile").methods(crow::HTTPMethod::Post)
-		([URL](const crow::request& req)
+		([&source_points, &target_points](const crow::request& req)
 			{
 				//deletes
 				source_points->clear();

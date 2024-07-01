@@ -7,8 +7,9 @@ class ScanService {
     async Delete3DFile(file) {
         var data_ = ""
         const formData = new FormData();
+        formData.append("FILE", file);
         await fetch(`${this.baseUrl}/delete3DFile`, {
-            method: 'POST',
+            method: 'Post',
             body: formData
         }).then(response => response.text())
             .then(data => {

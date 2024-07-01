@@ -89,7 +89,6 @@ function Combine() {
         const js = JSON.stringify(PickPoints);
         scanService.PickPointsMerge(js).then(resp =>
         {
-            var resMerge = scanService.ICPmerge(resp)
             AddToDialog(resp);
             if (view)
             {
