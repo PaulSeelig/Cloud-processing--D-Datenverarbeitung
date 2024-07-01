@@ -88,28 +88,23 @@ int main()
 	//ICP Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/mergeImportedFiles").methods("POST"_method)
 		([URL, target_points, source_points, final_points](const crow::request& req) {
-		// JSON store object
+		//JSON store object
 		crow::json::rvalue receivedData;
 
-		// Test to see if it's a JSON object
-		try {
-			crow::multipart::message msg(req);
+		//test to see if its a json object
+		try
+		{
+			receivedData = crow::json::load(req.body);
 
-			// Loop through the parts of the message
-			for (const auto& part : msg.parts) {
-				// Check if the part corresponds to the "File" field
-				// Extract the file content
-				std::string fileContent = part.body;
-				receivedData = crow::json::load(fileContent);
-			}
-
-			if (!receivedData) {
-				return crow::response(400, "Invalid JSON format"); // Wrong data type
+			if (!receivedData)
+			{
+				return crow::response(400, "Invalid JSON format"); //wrong data type
 			}
 		}
 		catch (const std::exception& e) {
 			return crow::response(400, e.what());
 		}
+
 
 		// 4x4 Matrix
 		pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation;
@@ -153,7 +148,7 @@ int main()
 				}
 
 				response["message"] = "Request processed successfully";
-				//response["transformation"] = matrix_json;
+				response["transformation"] = matrix_json.dump();
 			}
 			else {
 				// In case it didn't work

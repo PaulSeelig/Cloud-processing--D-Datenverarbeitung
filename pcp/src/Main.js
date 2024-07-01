@@ -90,13 +90,18 @@ function Combine() {
         scanService.PickPointsMerge(js).then(resp =>
         {
             AddToDialog(resp);
-            if (view)
-            {
+            if (view) {
                 view.querySelector('canvas').textContent = resp;
             }
-            else
-            {
-                AddView(files, JSON.parse(resp));
+            else {
+                AddView(files, JSON.parse(resp)).then(view => {
+                    view.querySelector('.ICPBtn').classList.remove('hidden');
+                    view.querySelector('.ICPBtn').addEventListener('click', function () {
+                        scanService.ICPmerge(view.querySelector('canvas').textContent).then(
+                            ICP_processed_matrix =>
+                                view.querySelector('canvas').textContent = ICP_processed_matrix);
+                    });
+                });
 
                 const observer = new MutationObserver(function () { Combine() });
                 const observer2 = new MutationObserver(function () { Combine() });
@@ -110,6 +115,10 @@ function Combine() {
     }
 
 }
+//function ICPMerge()
+//{
+//    
+//}
 /**
  * Adds EventListener to new Buttons, when new ViewWindow is created.
  * (EventListener don't get cloned)
@@ -121,7 +130,7 @@ function AssignBtns() {
     //var importinput = document.querySelector('.objViewWin:last-child .import');
     //importinput.addEventListener("change", event => { ImportFile(event.target) });
     document.querySelector('.objViewWin:last-child input.dragndrop').addEventListener("change", event => { ImportFile(event.target) });
-    document.querySelector('.objViewWin:last-child .clearBtn').addEventListener("click", event => { RemoveFile(event.target) });
+    //document.querySelector('.objViewWin:last-child .clearBtn').addEventListener("click", event => { RemoveFile(event.target) });
 
     document.querySelector('.objViewWin:last-child .Open_Further_Options').addEventListener("change", event => { HideShowOptions(event.target) });
      //document.querySelector('canvas').textContent.addEventListener("change", event => {
@@ -180,10 +189,12 @@ async function AddView(combineFiles, tMatrix) {
         }
         await Delay(100);
         await viewclone.classList.remove('minimized');
+        return viewclone;
     }
     else {
         AddToDialog("Sorry, you can't have more than " + MaxWindows + " Windows open");
     }
+    
 }
 
 

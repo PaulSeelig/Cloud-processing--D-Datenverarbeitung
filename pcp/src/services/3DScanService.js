@@ -37,7 +37,7 @@ class ScanService {
     }
 
     async PickPointsMerge(points) {
-        var answer = ""
+        var answer = "";
         await fetch(`${this.baseUrl}/pointsPicked`, {
             method: 'POST',
             body: points,
@@ -57,28 +57,28 @@ class ScanService {
     }
 
     async ICPmerge(matrix) {
-        const formData = new FormData();
-        formData.append('matrix', matrix);
-
-        const response = await fetch(`${this.baseUrl}/mergeImportedFiles`, {
+        await fetch(`${this.baseUrl}/mergeImportedFiles`, {
             method: 'POST',
-            body: formData,
-            mode: 'no-cors'
-        });
+            body: matrix,
+            redirect: "follow"
+        }).then(response => response.text())
+            .then(data => {
+                return data;
+            });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+        //if (!response.ok) {
+        //    throw new Error(`HTTP error! Status: ${response.status}`);
+        //}
 
-        const blob = await response.blob();  // Get the response as a blob
-        const url = window.URL.createObjectURL(blob);  // Create a URL for the blob
-        const a = document.createElement('a');  // Create an <a> element
-        a.href = url;
-        a.download = "exported_scan.ply";  // Set the default filename for the download
-        document.body.appendChild(a);
-        a.click();  // Simulate a click on the <a> element
-        a.remove();  // Remove the <a> element from the document
-        window.URL.revokeObjectURL(url);  // Clean up the URL object
+        //const blob = await response.blob();  // Get the response as a blob
+        //const url = window.URL.createObjectURL(blob);  // Create a URL for the blob
+        //const a = document.createElement('a');  // Create an <a> element
+        //a.href = url;
+        //a.download = "exported_scan.ply";  // Set the default filename for the download
+        //document.body.appendChild(a);
+        //a.click();  // Simulate a click on the <a> element
+        //a.remove();  // Remove the <a> element from the document
+        //window.URL.revokeObjectURL(url);  // Clean up the URL object
     }
 }
 
