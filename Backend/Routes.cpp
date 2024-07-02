@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <filesystem>
 
 //The Crow relevent headers
 #include "crow.h" //this needs to be replaced when using Linux to #include "crow_all.h"
@@ -21,12 +22,11 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 
-void loadDataIntoCloud(std::string& Data, std::string& extension,  pcl::PointCloud<pcl::PointXYZ> cloud)
+void loadDataIntoCloud(const std::string& Data,  pcl::PointCloud<pcl::PointXYZ>& cloud)
 {
-	if (extension == ".ply")
-	{
-		pcl::io::loadPLYFile(Data, cloud);
-	}
+	
+	pcl::io::loadPLYFile(Data, cloud);
+	
 }
 
 
@@ -52,51 +52,34 @@ int main()
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
 		[URL, source_points, target_points](const crow::request& req)
 			{
-				crow::multipart::message incomingData(req);
-
-				const auto& part = incomingData.parts[0];
-				std::string file_path = "/tmp/uploaded_file"; // Temporary file path
-				std::ofstream ofs(file_path, std::ios::binary);
-				ofs.write(part.body.data(), part.body.size());
-				ofs.close();
-
-				crow::response res; 
+				crow::response res;
 				res.add_header("Access-Control-Allow-Origin", URL);
 
-				// Check if there's a file in the parts
-				if (incomingData.parts.size() == 0) 
-				{
-					res.body = "No file sent";
-					res.code = 400;
-					return res;
-				}
+				std::string filePath;
 
-				//Check if target_points is empty
-				if (source_points->empty())
+				// Ensure the Content-Type is application/octet-stream
+				if (req.get_header_value("Content-Type") == "application/octet-stream") 
 				{
-					//Call load function
-					loadDataIntoCloud(file_path, incomingData.parts[1].body, *source_points);
+					filePath = "scan_output.ply";
+					// Save the received data as a .ply file
+					std::ofstream outFile(filePath, std::ios::binary);
+					if (!outFile) {
+						return crow::response(500, "Failed to open file for writing");
+					}
 
-					res.body = "File upload sucessful";
+					outFile.write(req.body.c_str(), req.body.size());
+					outFile.close();
+
+					loadDataIntoCloud( filePath , *target_points);
+
+					std::remove(filePath.c_str());
+
+					res.body = "File uploaded succesfully";
 					res.code = 200;
 					return res;
 				}
-				else if (target_points->empty())
-				{
-					//Call load function
-					loadDataIntoCloud(file_path, incomingData.parts[1].body, *target_points);
 
-					res.body = "File upload sucessful";
-					res.code = 200;
-					return res;
-				}
-				else
-				{
-					//return that the shit is full
-					res.body = "Allready 2 thingies on the server, consider reloading";
-					res.code = 400;
-					return res;
-				}
+				
 			});
 
 	//Delete Handler to delete saved point clouds
@@ -201,7 +184,7 @@ int main()
 			return res;
 		}
 		catch (const std::exception& e) {
-			return crow::response(200, "File combined with success");
+			return crow::response(400, e.what());
 		}
 
 
