@@ -19,6 +19,16 @@
 #include <pcl/registration/icp.h> 
 #include <pcl/registration/transformation_estimation_svd.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/ply_io.h>
+
+void loadDataIntoCloud(std::string& Data, std::string& extension,  pcl::PointCloud<pcl::PointXYZ> cloud)
+{
+	if (extension == ".ply")
+	{
+		pcl::io::loadPLYFile(Data, cloud);
+	}
+}
+
 
 int main()
 {
@@ -43,26 +53,49 @@ int main()
 		[URL, source_points, target_points](const crow::request& req)
 			{
 				crow::multipart::message incomingData(req);
+
+				const auto& part = incomingData.parts[0];
+				std::string file_path = "/tmp/uploaded_file"; // Temporary file path
+				std::ofstream ofs(file_path, std::ios::binary);
+				ofs.write(part.body.data(), part.body.size());
+				ofs.close();
+
+				crow::response res; 
+				res.add_header("Access-Control-Allow-Origin", URL);
+
 				// Check if there's a file in the parts
-				if (incomingData.parts.size() == 0) {
-					return crow::response(400, "No file uploaded");
+				if (incomingData.parts.size() == 0) 
+				{
+					res.body = "No file sent";
+					res.code = 400;
+					return res;
 				}
 
 				//Check if target_points is empty
 				if (source_points->empty())
 				{
 					//Call load function
-					return crow::response(200, "File uploaded succesfully");
+					loadDataIntoCloud(file_path, incomingData.parts[1].body, *source_points);
+
+					res.body = "File upload sucessful";
+					res.code = 200;
+					return res;
 				}
 				else if (target_points->empty())
 				{
 					//Call load function
-					return crow::response(200, "File uploaded succesfully");
+					loadDataIntoCloud(file_path, incomingData.parts[1].body, *target_points);
+
+					res.body = "File upload sucessful";
+					res.code = 200;
+					return res;
 				}
 				else
 				{
 					//return that the shit is full
-					return crow::response(400, "Server Capacity at maximum, consider reloading the Site");
+					res.body = "Allready 2 thingies on the server, consider reloading";
+					res.code = 400;
+					return res;
 				}
 			});
 
@@ -113,10 +146,16 @@ int main()
 		try {
 			auto matrixArray = receivedData["matrix"];
 
+			int i = 0;
+			
 			// Iterate over the 4x4 matrix in receivedData
-			for (int i = 0; i < 4; ++i) {
-				for (int j = 0; j < 4; ++j) {
-					transformation(i, j) = matrixArray[i][j].d(); // Access double value directly
+			for (int j = 0; j < 4; j++) 
+			{
+				for (int k = 0; k < 4; k++)
+				{
+					//filling the transformation matrix, maybe
+					transformation(j, k) = matrixArray[i].d(); 
+					i++;
 				}
 			}
 
@@ -158,7 +197,7 @@ int main()
 			// Crow response
 			crow::response res(response);
 			// Headers:
-			res.add_header("Access-Control-Allow-Origin", "*");
+			res.add_header("Access-Control-Allow-Origin", URL);
 			return res;
 		}
 		catch (const std::exception& e) {
