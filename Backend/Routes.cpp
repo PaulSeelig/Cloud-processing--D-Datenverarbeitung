@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <filesystem>
 
 //The Crow relevent headers
 #include "crow.h" //this needs to be replaced when using Linux to #include "crow_all.h"
@@ -19,6 +20,15 @@
 #include <pcl/registration/icp.h> 
 #include <pcl/registration/transformation_estimation_svd.h>
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/ply_io.h>
+
+void loadDataIntoCloud(const std::string& Data,  pcl::PointCloud<pcl::PointXYZ>& cloud)
+{
+	
+	pcl::io::loadPLYFile(Data, cloud);
+	
+}
+
 
 int main()
 {
@@ -42,28 +52,34 @@ int main()
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
 		[URL, source_points, target_points](const crow::request& req)
 			{
-				crow::multipart::message incomingData(req);
-				// Check if there's a file in the parts
-				if (incomingData.parts.size() == 0) {
-					return crow::response(400, "No file uploaded");
+				crow::response res;
+				res.add_header("Access-Control-Allow-Origin", URL);
+
+				std::string filePath;
+
+				// Ensure the Content-Type is application/octet-stream
+				if (req.get_header_value("Content-Type") == "application/octet-stream") 
+				{
+					filePath = "scan_output.ply";
+					// Save the received data as a .ply file
+					std::ofstream outFile(filePath, std::ios::binary);
+					if (!outFile) {
+						return crow::response(500, "Failed to open file for writing");
+					}
+
+					outFile.write(req.body.c_str(), req.body.size());
+					outFile.close();
+
+					loadDataIntoCloud( filePath , *target_points);
+
+					std::remove(filePath.c_str());
+
+					res.body = "File uploaded succesfully";
+					res.code = 200;
+					return res;
 				}
 
-				//Check if target_points is empty
-				if (source_points->empty())
-				{
-					//Call load function
-					return crow::response(200, "File uploaded succesfully");
-				}
-				else if (target_points->empty())
-				{
-					//Call load function
-					return crow::response(200, "File uploaded succesfully");
-				}
-				else
-				{
-					//return that the shit is full
-					return crow::response(400, "Server Capacity at maximum, consider reloading the Site");
-				}
+				
 			});
 
 	//Delete Handler to delete saved point clouds
@@ -113,10 +129,16 @@ int main()
 		try {
 			auto matrixArray = receivedData["matrix"];
 
+			int i = 0;
+			
 			// Iterate over the 4x4 matrix in receivedData
-			for (int i = 0; i < 4; ++i) {
-				for (int j = 0; j < 4; ++j) {
-					transformation(i, j) = matrixArray[i][j].d(); // Access double value directly
+			for (int j = 0; j < 4; j++) 
+			{
+				for (int k = 0; k < 4; k++)
+				{
+					//filling the transformation matrix, maybe
+					transformation(j, k) = matrixArray[i].d(); 
+					i++;
 				}
 			}
 
@@ -158,11 +180,11 @@ int main()
 			// Crow response
 			crow::response res(response);
 			// Headers:
-			res.add_header("Access-Control-Allow-Origin", "*");
+			res.add_header("Access-Control-Allow-Origin", URL);
 			return res;
 		}
 		catch (const std::exception& e) {
-			return crow::response(200, "File combined with success");
+			return crow::response(400, e.what());
 		}
 
 
