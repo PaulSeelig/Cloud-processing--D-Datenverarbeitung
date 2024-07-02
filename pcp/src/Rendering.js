@@ -5,6 +5,7 @@ import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 
 import AddScene from './AddScene';
+
 function RenderFileOnCanvas(files, canvas, tMatrix) {
     tMatrix ? tMatrix = tMatrix.matrix : '';
     const renderer = new THREE.WebGLRenderer({ antialias: true, canvas, alpha: true });
@@ -18,7 +19,7 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
     const pointsize2 = canvas.parentNode.querySelectorAll('.pointsize')[1];
     const pointclr = canvas.parentNode.querySelector('[name="colors"]');
     const pointclr2 = canvas.parentNode.querySelectorAll('[name="colors"]')[1];
-    function NewPoint(colour) { return new THREE.Mesh(new THREE.SphereGeometry(1 + pointsize.value / 500000, 1, 1), new THREE.MeshBasicMaterial({ color: colour })); }
+    function NewPoint(colour) { return new THREE.Mesh(new THREE.SphereGeometry(2 + pointsize.value / 500000, 1, 1), new THREE.MeshBasicMaterial({ color: colour })); }
     var P1 = NewPoint(0x3d9044);
     var P2 = NewPoint(0x32f044);
     var P3 = NewPoint(0x3290e4);
@@ -30,7 +31,9 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
     scene.add(Points);
     var PCounter = 1;
     const raycaster = new THREE.Raycaster();
-    raycaster.params.Points.threshold = 10;
+    const raycasterPP = new THREE.Raycaster();
+    raycasterPP.params.Points.threshold = 1000;
+    raycasterPP.params.Line.threshold = 1;
     const pointer = new THREE.Vector2();
     function onPointerClick(event) {
         event.preventDefault();
@@ -45,9 +48,9 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
 
         if (D3_Mesh) {
             raycaster.setFromCamera(pointer, camera);
-            //const intersects = raycaster.intersectObject(event.type == 'click' ? D3_Mesh : Points);
-            //raycaster.params.Points.threshold = 1000000000;
-            const P = raycaster.intersectObject(P1).length > 0 ? P1 : raycaster.intersectObject(P2).length > 0 ? P2 : raycaster.intersectObject(P3).length > 0 ? P3 : null;
+            raycasterPP.setFromCamera(pointer, camera);
+            const interPp = raycasterPP.intersectObject(Points)[0];
+            const P = !interPp? null : interPp.object;
             if (P) {
                 console.info(P.point + "removed to zero");
                 P.position.copy(PZero.position);
@@ -56,13 +59,14 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
             }
             else
             {
-                //raycaster.params.Points.threshold = 0.1
                 const intersects = raycaster.intersectObject(D3_Mesh);
                 if (intersects.length > 0)
                 {
                     const intersect = intersects[0];
                     console.info(intersect.point);
-                    P1.position.equals(PZero.position) ? SetPoint(P1, intersect) : P2.position.equals(PZero.position) ? SetPoint(P2, intersect) : P3.position.equals(PZero.position) ? SetPoint(P3, intersect) : "";
+                    P1.position.equals(PZero.position) ? SetPoint(P1, intersect) :
+                        P2.position.equals(PZero.position) ? SetPoint(P2, intersect) :
+                            P3.position.equals(PZero.position) ? SetPoint(P3, intersect) : "";
                 }
             }
         }
@@ -95,24 +99,19 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
                             setMatrix(D3_Mesh, tMatrix.matrix);
                         }
                     );
-                    // Call 'observe' on the MutationObserver instance, specifying the element to observe
                     observer.observe(canvas, { childList: true });
-
-                
-
                 }
                 scene.add(a == 0 ? D3_Mesh : D3_Mesh2);
             }
 
-            if (files[a].name.endsWith('.ply')) {
-                new PLYLoader().load(e.target.result, handleGeometry, undefined, console.error);
-            } else if (files[a].name.endsWith('.xyz')) {
-                new XYZLoader().load(e.target.result, handleGeometry, undefined, console.error);
-            } else if (files[a].name.endsWith('.stl')) {
-                new STLLoader().load(e.target.result, handleGeometry, undefined, console.error);
-            } else {
-                return console.error("Unsupported file type");
-            }
+            files[a].name.endsWith('.ply') ? 
+                new PLYLoader().load(e.target.result, handleGeometry, undefined, console.error) :
+                files[a].name.endsWith('.xyz') ?
+                    new XYZLoader().load(e.target.result, handleGeometry, undefined, console.error) :
+                    files[a].name.endsWith('.stl') ?
+                        new STLLoader().load(e.target.result, handleGeometry, undefined, console.error) :
+                        console.error("Unsupported file type"); // this is not an actual test for unsupported files... import() already tests for unsupported fileEnds ... therefor a break of thefunction is unnecessary
+            
             if (a == 0) {
                 pointsize.addEventListener("input", function () { D3_Mesh.material.size = pointsize.value / 500000 });
                 pointclr.addEventListener("input", function () { D3_Mesh.material.color = new THREE.Color(pointclr.value) });
@@ -147,6 +146,7 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
 
         controls.update();
         raycaster.setFromCamera(pointer, camera);
+        raycasterPP.setFromCamera(pointer, camera);
 
 
         
