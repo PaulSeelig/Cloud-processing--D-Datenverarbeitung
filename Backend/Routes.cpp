@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iostream>
 #include <filesystem>
+#include <list>
 
 //The Crow relevent headers
 #include "crow.h" //this needs to be replaced when using Linux to #include "crow_all.h"
@@ -17,18 +18,22 @@
 //The PCL relevant headers
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/PolygonMesh.h>
+
 #include <pcl/registration/icp.h> 
 #include <pcl/registration/transformation_estimation_svd.h>
+
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
+#include <pcl/io/vtk_io.h>
 
-void loadDataIntoCloud(const std::string& Data,  pcl::PointCloud<pcl::PointXYZ>& cloud)
+void saveFile(const std::string& filePath ,crow::request req)
 {
-	
-	pcl::io::loadPLYFile(Data, cloud);
-	
-}
+	std::ofstream outFile(filePath, std::ios::binary);
 
+	outFile.write(req.body.c_str(), req.body.size());
+	outFile.close();
+}
 
 int main()
 {
@@ -41,59 +46,91 @@ int main()
 	std::string URL = "http://localhost:5173";
 
 	//Point Clouds where the imported Data gets Saved, can then be deleted with the /delete3DFiles endpoint
-	pcl::PointCloud<pcl::PointXYZ>::Ptr source_points(new pcl::PointCloud<pcl::PointXYZ>);
-	pcl::PointCloud<pcl::PointXYZ>::Ptr target_points(new pcl::PointCloud<pcl::PointXYZ>);
-	//PCD format?? -> put the files in here convert from stl, ply and xyz to pcd pottentially?
+	std::list<pcl::PointCloud<pcl::PointXYZ>::Ptr> pcList;
 
 	//Output pointcloud
 	pcl::PointCloud<pcl::PointXYZ>::Ptr final_points(new pcl::PointCloud<pcl::PointXYZ>);
 
 	//Saving of incoming Data as Pointclouds
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
-		[URL, source_points, target_points](const crow::request& req)
+		[URL, &pcList](const crow::request& req)
 			{
 				crow::response res;
 				res.add_header("Access-Control-Allow-Origin", URL);
 
 				std::string filePath;
 
-				// Ensure the Content-Type is application/octet-stream
+				// Initialize the point cloud
+				pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+				// This saves ply Files
 				if (req.get_header_value("Content-Type") == "application/octet-stream") 
 				{
 					filePath = "scan_output.ply";
 					// Save the received data as a .ply file
-					std::ofstream outFile(filePath, std::ios::binary);
-					if (!outFile) {
-						return crow::response(500, "Failed to open file for writing");
-					}
+					saveFile(filePath, req);
 
-					outFile.write(req.body.c_str(), req.body.size());
-					outFile.close();
 
-					loadDataIntoCloud( filePath , *target_points);
+					pcl::io::loadPLYFile( filePath , *cloud);
+
+					pcList.push_back(cloud);
 
 					std::remove(filePath.c_str());
 
+				}
+				if (req.get_header_value("Content-Type") == "model/stl")
+				{
+					filePath = "scan_output.stl";
+					// Save the received data as a .ply file
+					saveFile(filePath, req);
+
+					pcl::PolygonMesh mesh;
+					
+
+					std::remove(filePath.c_str());
+
+				}
+				if (req.get_header_value("Content-Type") == "chemical / x - xyz")
+				{
+					filePath = "scan_output.xyz";
+					// Save the received data as a .ply file
+					saveFile(filePath, req);
+
+
+					if (pcl::io::loadPCDFile(filePath, *cloud) == -1) 
+					{
+						std::remove(filePath.c_str());
+						return crow::response(500, "Failed to load PCD file");
+					}
+
+					//std::remove(filePath.c_str());
+					pcList.push_back(cloud);
+				}
+				
+				if (pcList.back() == cloud)
+				{
 					res.body = "File uploaded succesfully";
 					res.code = 200;
-					return res;
+				} 
+				else
+				{
+					res.body = "File upload failed";
+					res.code = 400;
 				}
-
-				
+				return res;
 			});
 
 	//Delete Handler to delete saved point clouds
 	CROW_ROUTE(app, "/delete3DFile").methods(crow::HTTPMethod::Post)
-		([&source_points, &target_points](const crow::request& req)
+		([pcList](const crow::request& req)
 			{
 				//deletes
-				source_points->clear();
-				target_points->clear();
+				
 
 				//clear the saved Data possible PCD
 				
 				//checks if deleting was succesful and sends back the appropriete response
-				if (source_points->points.empty() && target_points->points.empty()) {
+				if (true) {
 					return crow::response("Point Clouds have been deleted");
 				}
 				else {
@@ -103,7 +140,7 @@ int main()
 
 	//ICP Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/mergeImportedFiles").methods("POST"_method)
-		([URL, target_points, source_points, final_points](const crow::request& req) {
+		([URL, pcList, final_points](const crow::request& req) {
 		//JSON store object
 		crow::json::rvalue receivedData;
 
@@ -143,12 +180,12 @@ int main()
 			}
 
 			// Apply the transformation matrix to the source point cloud
-			pcl::transformPointCloud(*source_points, *source_points, transformation);
+			//pcl::transformPointCloud(*source_points, *source_points, transformation);
 
 			// Initialization of ICP and inputting the point clouds
 			pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-			icp.setInputSource(source_points);
-			icp.setInputTarget(target_points);
+			//icp.setInputSource();
+			//icp.setInputTarget();
 
 			// The transformation into a Final "Output" Point Cloud
 			icp.align(*final_points);
