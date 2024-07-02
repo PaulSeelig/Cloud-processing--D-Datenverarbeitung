@@ -21,9 +21,10 @@ class ScanService {
         return data_;
     }
 
-    async Import3dScan(fileContent) {
+    async Import3dScan(fileContent, fileEnd) {
         const formData = new FormData();
         formData.append('File', fileContent);
+        formData.append('Name', fileEnd);
 
         const response = await fetch(`${this.baseUrl}/Import3dScan`, {
             method: 'POST',
@@ -65,20 +66,7 @@ class ScanService {
             .then(data => {
                 return data;
             });
-
-        //if (!response.ok) {
-        //    throw new Error(`HTTP error! Status: ${response.status}`);
-        //}
-
-        //const blob = await response.blob();  // Get the response as a blob
-        //const url = window.URL.createObjectURL(blob);  // Create a URL for the blob
-        //const a = document.createElement('a');  // Create an <a> element
-        //a.href = url;
-        //a.download = "exported_scan.ply";  // Set the default filename for the download
-        //document.body.appendChild(a);
-        //a.click();  // Simulate a click on the <a> element
-        //a.remove();  // Remove the <a> element from the document
-        //window.URL.revokeObjectURL(url);  // Clean up the URL object
+       
     }
 }
 

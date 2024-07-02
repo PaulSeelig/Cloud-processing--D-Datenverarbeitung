@@ -30,7 +30,7 @@ function RenderFileOnCanvas(files, canvas, tMatrix) {
     scene.add(Points);
     var PCounter = 1;
     const raycaster = new THREE.Raycaster();
-    raycaster.params.Points.threshold = 1;
+    raycaster.params.Points.threshold = 10;
     const pointer = new THREE.Vector2();
     function onPointerClick(event) {
         event.preventDefault();

@@ -2,7 +2,7 @@ import RenderFileOnCanvas from "./Rendering";
 import ScanService from "./services/3DScanService"
 
 var DialogLine = 1;
-
+var combineOnGoing = false;
 
 const MaxWindows = 8;
 
@@ -12,7 +12,13 @@ const scanService = new ScanService('http://localhost:18080');
 const clone = document.querySelector('#objViewCont .objViewWin').cloneNode(true);
 function setup() {
     document.getElementById("Addbtn").addEventListener("click", function () { AddView() }); // This is a stupid fix, don't touch it, unless ur solution really works ... Without the function(){ } the function is not working as a event but is executed once on setup.. idk why;
-    document.getElementById("combine").addEventListener("click", Combine);
+    document.getElementById("combine").addEventListener("click", function () {
+        this.disabled = true;
+        Combine();
+        setTimeout(() => { this.disabled = false; }, 3000);
+            
+        
+    });
 
     document.getElementById("saveBtn").addEventListener("click", SaveFile);
 
@@ -63,9 +69,8 @@ function CheckCombineConditions()
 }
 function Combine() {
     const errormsg = CheckCombineConditions();
-    if (errormsg) { AddToDialog(errormsg) }
+    if (errormsg) { AddToDialog(errormsg) } 
     else {
-
         const files = [];
         var PickPoints = [];
         var canv = null ;
@@ -77,12 +82,9 @@ function Combine() {
                 files.push(imp.files[0]);
                 PickPoints.push(pp[0], pp[1], pp[2]);
                 MiniView(imp);
-
                 !canv ? canv = canvas : canv2 = canvas;
-                
             }
         }
-
         const title = "CombineView: " + files[0].name + " + " + files[1].name;
         var view = null;
         for (const objView of document.querySelectorAll('.objViewWin')) { title == objView.title ? view = objView : '' }
