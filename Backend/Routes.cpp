@@ -61,100 +61,77 @@ int main()
 	//Output pointcloud
 	pcl::PointCloud<pcl::PointXYZ>::Ptr final_points(new pcl::PointCloud<pcl::PointXYZ>);
 
+	
+
 	//Saving of incoming Data as Pointclouds
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
 		[URL, &pcList](const crow::request& req)
+		{
+			crow::response res;
+			res.add_header("Access-Control-Allow-Origin", URL);
+
+			std::string filePath;
+
+			// Initialize the point cloud
+			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+			// This saves ply Files
+			if (req.get_header_value("Content-Type") == "application/octet-stream")
 			{
-			    crow::multipart::message msg(req);
+				filePath = "scan_output.ply";
+				// Save the received data as a .ply file
+				saveFile(filePath, true, req);
 
-				crow::response res;
-				res.add_header("Access-Control-Allow-Origin", URL);
-				
-				std::string fileType = msg.parts[1].body;
-				std::string fileContent = msg.parts[0].body;
-				std::string filePath;
 
-				// Initialize the point cloud
-				pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+				pcl::io::loadPLYFile(filePath, *cloud);
 
-				// This saves ply Files
-				if (fileType == ".ply")
+				pcList.push_back(cloud);
+
+				std::remove(filePath.c_str());
+
+			}
+			if (req.get_header_value("Content-Type") == "model/stl")
+			{
+				filePath = "scan_output.stl";
+				// Save the received data as a .ply file
+				saveFile(filePath, true, req);
+
+				pcl::PolygonMesh mesh;
+
+
+				std::remove(filePath.c_str());
+
+			}
+			if (req.get_header_value("Content-Type") == "chemical/x-xyz")
+			{
+				filePath = "scan_output.xyz";
+				// Save the received data as a .ply file
+				saveFile(filePath, false, req);
+
+				//man this didnt work sad
+				if (pcl::io::loadPCDFile(filePath, *cloud) == -1)
 				{
-					filePath = "scan_output.ply";
-					// Save the received data as a .ply file
-					saveFile(filePath, true, fileContent);
-
-
-					pcl::io::loadPLYFile( filePath , *cloud);
-
-					pcList.push_back(cloud);
-
 					std::remove(filePath.c_str());
-
+					return crow::response(500, "Failed to load PCD file");
 				}
-				if (req.get_header_value("Content-Type") == "model/stl")
-				{
-					filePath = "scan_output.stl";
-					// Save the received data as a .ply file
-					saveFile(filePath, true, fileContent);
 
-					pcl::PolygonMesh mesh;
-					
+				std::remove(filePath.c_str());
+				pcList.push_back(cloud);
+			}
 
-					std::remove(filePath.c_str());
+			if (!pcList.empty() && pcList.back() == cloud)
+			{
+				res.body = "File uploaded succesfully";
+				res.code = 200;
+			}
+			else
+			{
+				res.body = "File upload failed";
+				res.code = 400;
+			}
+			return res;
+		});
 
-				}
-				if (req.get_header_value("Content-Type") == "chemical/x-xyz")
-				{
-					filePath = "scan_output.xyz";
-					saveFile(filePath, false, fileContent);
-
-					std::ifstream inFile(filePath);
-					if (!inFile) {
-						std::remove(filePath.c_str());
-						return crow::response(500, "Failed to open XYZ file for reading");
-					}
-
-					std::string line;
-					while (std::getline(inFile, line)) 
-					{
-						// Skip comment lines or empty lines
-						if (line.empty() || line[0] == '#') 
-						{
-							continue;
-						}
-
-						std::istringstream iss(line);
-						pcl::PointXYZ point;
-						std::cout << "Reading line: " << line << std::endl;
-						if (!(iss >> point.x >> point.y >> point.z)) 
-						{
-							std::remove(filePath.c_str());
-							return crow::response(500, "Failed to parse XYZ file");
-						}
-						cloud->points.push_back(point);
-					}
-					cloud->width = cloud->points.size();
-					cloud->height = 1;
-					cloud->is_dense = true;
-
-					inFile.close();
-					pcList.push_back(cloud);
-					std::remove(filePath.c_str());
-				}
-				
-				if (!pcList.empty() && pcList.back() == cloud)
-				{
-					res.body = "File uploaded succesfully";
-					res.code = 200;
-				} 
-				else
-				{
-					res.body = "File upload failed";
-					res.code = 400;
-				}
-				return res;
-			});
 
 	//Delete Handler to delete saved point clouds
 	CROW_ROUTE(app, "/delete3DFile").methods(crow::HTTPMethod::Post)
