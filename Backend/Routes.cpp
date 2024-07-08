@@ -28,7 +28,7 @@
 #include <pcl/io/vtk_io.h>
 //#include <pcl/io/vtk_lib_io.h> //this needs the vtk library and just leads to errors
 
-void saveFile(const std::string& filePath, bool isBinary, const crow::request& req)
+static void saveFile(const std::string& filePath, bool isBinary, std::string& fileContent)
 {
 	std::ofstream outFile;
 	if (isBinary)
@@ -40,7 +40,7 @@ void saveFile(const std::string& filePath, bool isBinary, const crow::request& r
 		outFile.open(filePath);
 	}
 
-	outFile.write(req.body.c_str(), req.body.size());
+	outFile.write(fileContent.c_str(), fileContent.size());
 	outFile.close();
 }
 
@@ -65,20 +65,24 @@ int main()
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
 		[URL, &pcList](const crow::request& req)
 			{
+			    crow::multipart::message msg(req);
+
 				crow::response res;
 				res.add_header("Access-Control-Allow-Origin", URL);
-
+				
+				std::string fileType = msg.parts[1].body;
+				std::string fileContent = msg.parts[0].body;
 				std::string filePath;
 
 				// Initialize the point cloud
 				pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
 				// This saves ply Files
-				if (req.get_header_value("Content-Type") == "application/octet-stream") 
+				if (fileType == ".ply")
 				{
 					filePath = "scan_output.ply";
 					// Save the received data as a .ply file
-					saveFile(filePath, true, req);
+					saveFile(filePath, true, fileContent);
 
 
 					pcl::io::loadPLYFile( filePath , *cloud);
@@ -92,7 +96,7 @@ int main()
 				{
 					filePath = "scan_output.stl";
 					// Save the received data as a .ply file
-					saveFile(filePath, true, req);
+					saveFile(filePath, true, fileContent);
 
 					pcl::PolygonMesh mesh;
 					
@@ -103,7 +107,7 @@ int main()
 				if (req.get_header_value("Content-Type") == "chemical/x-xyz")
 				{
 					filePath = "scan_output.xyz";
-					saveFile(filePath, false, req);
+					saveFile(filePath, false, fileContent);
 
 					std::ifstream inFile(filePath);
 					if (!inFile) {
@@ -172,7 +176,7 @@ int main()
 
 	//ICP Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/mergeImportedFiles").methods("POST"_method)
-		([URL, pcList, final_points](const crow::request& req) {
+		([URL, &pcList, final_points](const crow::request& req) {
 		//JSON store object
 		crow::json::rvalue receivedData;
 
@@ -196,7 +200,7 @@ int main()
 
 		// Extracting the 4x4 Matrix from JSON Object
 		try {
-			auto matrixArray = receivedData["matrix"];
+			auto& matrixArray = receivedData;
 
 			int i = 0;
 			
@@ -212,8 +216,8 @@ int main()
 			}
 
 			//dereference the Pointcloud list to pointclouds
-			pcl::PointCloud<pcl::PointXYZ>::Ptr sor_cloud = *pcList.begin();
-			pcl::PointCloud<pcl::PointXYZ>::Ptr tar_cloud = *pcList.end();
+			pcl::PointCloud<pcl::PointXYZ>::Ptr sor_cloud = pcList.front();
+			pcl::PointCloud<pcl::PointXYZ>::Ptr tar_cloud = pcList.back();
 
 			// Apply the transformation matrix to the source point cloud
 			pcl::transformPointCloud(*sor_cloud, *sor_cloud, transformation);

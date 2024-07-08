@@ -107,7 +107,7 @@ function RenderFileOnCanvas(files, canvas, tMatrix, params1, params2) {
                 
                 if (a == 0 && tMatrix) {
                     setMatrix(D3_Mesh, tMatrix);
-                     D3_Mesh.matrixAutoUpdate = false;
+                    D3_Mesh.matrixAutoUpdate = false;
                     const observer = new MutationObserver(
                         function () {
                             tMatrix = JSON.parse(canvas.textContent);
@@ -137,6 +137,7 @@ function RenderFileOnCanvas(files, canvas, tMatrix, params1, params2) {
                 pointclr2.addEventListener("input", function () { D3_Mesh2.material.color = new THREE.Color(pointclr2.value) });
 
                 pointsize2.value = params2[0];
+                canvas.textContent = JSON.stringify(tMatrix);
             }
         }     
     }
