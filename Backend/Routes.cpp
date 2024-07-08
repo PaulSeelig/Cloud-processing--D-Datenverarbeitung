@@ -26,14 +26,24 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 #include <pcl/io/vtk_io.h>
+//#include <pcl/io/vtk_lib_io.h> //this needs the vtk library and just leads to errors
 
-void saveFile(const std::string& filePath ,crow::request req)
+void saveFile(const std::string& filePath, bool isBinary, const crow::request& req)
 {
-	std::ofstream outFile(filePath, std::ios::binary);
+	std::ofstream outFile;
+	if (isBinary)
+	{
+		outFile.open(filePath, std::ios::binary);
+	}
+	else
+	{
+		outFile.open(filePath);
+	}
 
 	outFile.write(req.body.c_str(), req.body.size());
 	outFile.close();
 }
+
 
 int main()
 {
@@ -68,7 +78,7 @@ int main()
 				{
 					filePath = "scan_output.ply";
 					// Save the received data as a .ply file
-					saveFile(filePath, req);
+					saveFile(filePath, true, req);
 
 
 					pcl::io::loadPLYFile( filePath , *cloud);
@@ -82,7 +92,7 @@ int main()
 				{
 					filePath = "scan_output.stl";
 					// Save the received data as a .ply file
-					saveFile(filePath, req);
+					saveFile(filePath, true, req);
 
 					pcl::PolygonMesh mesh;
 					
@@ -90,24 +100,24 @@ int main()
 					std::remove(filePath.c_str());
 
 				}
-				if (req.get_header_value("Content-Type") == "chemical / x - xyz")
+				if (req.get_header_value("Content-Type") == "chemical/x-xyz")
 				{
 					filePath = "scan_output.xyz";
 					// Save the received data as a .ply file
-					saveFile(filePath, req);
+					saveFile(filePath, false, req);
 
-
+					//man this didnt work sad
 					if (pcl::io::loadPCDFile(filePath, *cloud) == -1) 
 					{
 						std::remove(filePath.c_str());
 						return crow::response(500, "Failed to load PCD file");
 					}
 
-					//std::remove(filePath.c_str());
+					std::remove(filePath.c_str());
 					pcList.push_back(cloud);
 				}
 				
-				if (pcList.back() == cloud)
+				if (!pcList.empty() && pcList.back() == cloud)
 				{
 					res.body = "File uploaded succesfully";
 					res.code = 200;
