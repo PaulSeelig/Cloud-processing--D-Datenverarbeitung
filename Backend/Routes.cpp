@@ -103,18 +103,40 @@ int main()
 				if (req.get_header_value("Content-Type") == "chemical/x-xyz")
 				{
 					filePath = "scan_output.xyz";
-					// Save the received data as a .ply file
 					saveFile(filePath, false, req);
 
-					//man this didnt work sad
-					if (pcl::io::loadPCDFile(filePath, *cloud) == -1) 
-					{
+					std::ifstream inFile(filePath);
+					if (!inFile) {
 						std::remove(filePath.c_str());
-						return crow::response(500, "Failed to load PCD file");
+						return crow::response(500, "Failed to open XYZ file for reading");
 					}
 
-					std::remove(filePath.c_str());
+					std::string line;
+					while (std::getline(inFile, line)) 
+					{
+						// Skip comment lines or empty lines
+						if (line.empty() || line[0] == '#') 
+						{
+							continue;
+						}
+
+						std::istringstream iss(line);
+						pcl::PointXYZ point;
+						std::cout << "Reading line: " << line << std::endl;
+						if (!(iss >> point.x >> point.y >> point.z)) 
+						{
+							std::remove(filePath.c_str());
+							return crow::response(500, "Failed to parse XYZ file");
+						}
+						cloud->points.push_back(point);
+					}
+					cloud->width = cloud->points.size();
+					cloud->height = 1;
+					cloud->is_dense = true;
+
+					inFile.close();
 					pcList.push_back(cloud);
+					std::remove(filePath.c_str());
 				}
 				
 				if (!pcList.empty() && pcList.back() == cloud)
@@ -189,13 +211,17 @@ int main()
 				}
 			}
 
-			// Apply the transformation matrix to the source point cloud
-			//pcl::transformPointCloud(*source_points, *source_points, transformation);
+			//dereference the Pointcloud list to pointclouds
+			pcl::PointCloud<pcl::PointXYZ>::Ptr sor_cloud = *pcList.begin();
+			pcl::PointCloud<pcl::PointXYZ>::Ptr tar_cloud = *pcList.end();
 
+			// Apply the transformation matrix to the source point cloud
+			pcl::transformPointCloud(*sor_cloud, *sor_cloud, transformation);
+			
 			// Initialization of ICP and inputting the point clouds
 			pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-			//icp.setInputSource();
-			//icp.setInputTarget();
+			icp.setInputSource(sor_cloud);
+			icp.setInputTarget(tar_cloud);
 
 			// The transformation into a Final "Output" Point Cloud
 			icp.align(*final_points);
