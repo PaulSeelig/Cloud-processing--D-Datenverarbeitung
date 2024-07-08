@@ -96,10 +96,14 @@ function Combine() {
                 view.querySelector('canvas').textContent = resp;
             }
             else {
-                AddView(files, JSON.parse(resp)).then(view => {
+                var params1 = [canv.parentNode.querySelector('[name="pointsize"]'), canv.parentNode.querySelector('[name="colors"]')];
+                var params2 = [canv2.parentNode.querySelector('[name="pointsize"]'), canv2.parentNode.querySelector('[name="colors"]')];
+                AddView(files, JSON.parse(resp), params1, params2)
+                    .then(view => {
                     view.querySelector('.ICPBtn').classList.remove('hidden');
                     view.querySelector('.ICPBtn').addEventListener('click', function () {
-                        scanService.ICPmerge(view.querySelector('canvas').textContent).then(
+                        scanService.ICPmerge(view.querySelector('canvas').textContent)
+                            .then(
                             ICP_processed_matrix =>
                                 view.querySelector('canvas').textContent = ICP_processed_matrix);
                     });
@@ -172,7 +176,7 @@ function Delay(milliseconds) {
  * if combineFile is a file and not null, it will be displayed in the new viewWindow
  * @param {any} combineFile
  */
-async function AddView(combineFiles, tMatrix) {
+async function AddView(combineFiles, tMatrix, params1, params2) {
     var viewcont = document.getElementById("objViewCont"); // gets the Element that contains all Viewports
     var winCount = viewcont.childElementCount;
     if (winCount < MaxWindows || combineFiles) {
@@ -182,7 +186,7 @@ async function AddView(combineFiles, tMatrix) {
         }
         const viewclone = clone.cloneNode(true);
         if (combineFiles) {
-            visualFile(viewclone, combineFiles, tMatrix);
+            visualFile(viewclone, combineFiles, tMatrix, params1, params2);
         }
         viewcont.appendChild(viewclone);
         AssignBtns();
@@ -256,7 +260,7 @@ async function ImportFile(eventtarget) {
     }
 }
 
-function visualFile(objView, files, tMatrix) {
+function visualFile(objView, files, tMatrix, params1, params2) {
     objView.title = files.length == 1 ? files[0].name : "CombineView: " + files[0].name + " + " + files[1].name;
     const h2 = objView.querySelector('h2');
     h2.innerHTML = files[0].name;
@@ -270,7 +274,7 @@ function visualFile(objView, files, tMatrix) {
     }
     const canvas = objView.querySelector('canvas');
     objView.querySelector('.hint').classList.add("hidden");
-    files.onload = RenderFileOnCanvas(files, canvas, tMatrix);
+    files.onload = RenderFileOnCanvas(files, canvas, tMatrix, params1, params2);
 }
 /**
  * takes a string or similar and displays it in the website
