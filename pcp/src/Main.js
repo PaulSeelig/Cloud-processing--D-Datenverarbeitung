@@ -2,7 +2,6 @@ import RenderFileOnCanvas from "./Rendering";
 import ScanService from "./services/3DScanService"
 
 var DialogLine = 1;
-var combineOnGoing = false;
 
 const MaxWindows = 8;
 
