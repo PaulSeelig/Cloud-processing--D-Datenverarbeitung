@@ -63,24 +63,27 @@ int main()
 
 	
 
-	//Saving of incoming Data as Pointclouds
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
 		[URL, &pcList](const crow::request& req)
 		{
+			crow::multipart::message msg(req);
+
 			crow::response res;
 			res.add_header("Access-Control-Allow-Origin", URL);
 
+			std::string fileType = msg.parts[1].body;
+			std::string fileContent = msg.parts[0].body;
 			std::string filePath;
 
 			// Initialize the point cloud
 			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
 			// This saves ply Files
-			if (req.get_header_value("Content-Type") == "application/octet-stream")
+			if (fileType == ".ply")
 			{
 				filePath = "scan_output.ply";
 				// Save the received data as a .ply file
-				saveFile(filePath, true, req);
+				saveFile(filePath, true, fileContent);
 
 
 				pcl::io::loadPLYFile(filePath, *cloud);
@@ -90,11 +93,11 @@ int main()
 				std::remove(filePath.c_str());
 
 			}
-			if (req.get_header_value("Content-Type") == "model/stl")
+			if (fileType == ".stl")
 			{
 				filePath = "scan_output.stl";
 				// Save the received data as a .ply file
-				saveFile(filePath, true, req);
+				saveFile(filePath, true, fileContent);
 
 				pcl::PolygonMesh mesh;
 
@@ -102,21 +105,43 @@ int main()
 				std::remove(filePath.c_str());
 
 			}
-			if (req.get_header_value("Content-Type") == "chemical/x-xyz")
+			if (fileType == ".xyz")
 			{
 				filePath = "scan_output.xyz";
-				// Save the received data as a .ply file
-				saveFile(filePath, false, req);
+				saveFile(filePath, false, fileContent);
 
-				//man this didnt work sad
-				if (pcl::io::loadPCDFile(filePath, *cloud) == -1)
-				{
+				std::ifstream inFile(filePath);
+				if (!inFile) {
 					std::remove(filePath.c_str());
-					return crow::response(500, "Failed to load PCD file");
+					return crow::response(500, "Failed to open XYZ file for reading");
 				}
 
-				std::remove(filePath.c_str());
+				std::string line;
+				while (std::getline(inFile, line))
+				{
+					// Skip comment lines or empty lines
+					if (line.empty() || line[0] == '#')
+					{
+						continue;
+					}
+
+					std::istringstream iss(line);
+					pcl::PointXYZ point;
+					std::cout << "Reading line: " << line << std::endl;
+					if (!(iss >> point.x >> point.y >> point.z))
+					{
+						std::remove(filePath.c_str());
+						return crow::response(500, "Failed to parse XYZ file");
+					}
+					cloud->points.push_back(point);
+				}
+				cloud->width = cloud->points.size();
+				cloud->height = 1;
+				cloud->is_dense = true;
+
+				inFile.close();
 				pcList.push_back(cloud);
+				std::remove(filePath.c_str());
 			}
 
 			if (!pcList.empty() && pcList.back() == cloud)
@@ -185,24 +210,9 @@ int main()
 				}
 			}
 
-			// Debug print transformation matrix
-			std::cout << "Transformation Matrix:" << std::endl;
-			std::cout << transformation << std::endl;
-
 			// Dereference the Pointcloud list to pointclouds
 			pcl::PointCloud<pcl::PointXYZ>::Ptr sor_cloud = pcList.front();
 			pcl::PointCloud<pcl::PointXYZ>::Ptr tar_cloud = pcList.back();
-
-			// Verify point cloud sizes
-			std::cout << "Source points: " << sor_cloud->size() << std::endl;
-			std::cout << "Target points: " << tar_cloud->size() << std::endl;
-
-			if (sor_cloud->empty() || tar_cloud->empty()) {
-				return crow::response(400, "One of the point clouds is empty");
-			}
-
-			// Apply the transformation matrix to the source point cloud
-			pcl::transformPointCloud(*sor_cloud, *sor_cloud, transformation);
 
 			// Initialization of ICP and inputting the point clouds
 			pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
@@ -218,8 +228,7 @@ int main()
 
 			// The transformation into a Final "Output" Point Cloud
 			try {
-				std::cout << "Starting ICP alignment..." << std::endl;
-				icp.align(*final_points);
+				icp.align(*final_points, transformation);
 
 				// Crow JSON return object
 				crow::json::wvalue response;
@@ -266,9 +275,6 @@ int main()
 	CROW_ROUTE(app, "/pointsPicked").methods(crow::HTTPMethod::POST)
 		([URL](const crow::request& req)
 			{
-				//Innitialization and subsequent conversion from Points picked to Pointclouds
-				
-
 				//Initialize Response
 				crow::response res;
 				crow::json::rvalue pickedPoints;
