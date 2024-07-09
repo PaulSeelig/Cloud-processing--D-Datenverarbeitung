@@ -177,23 +177,19 @@ int main()
 	//ICP Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/mergeImportedFiles").methods("POST"_method)
 		([URL, &pcList, final_points](const crow::request& req) {
-		//JSON store object
+		// JSON store object
 		crow::json::rvalue receivedData;
 
-		//test to see if its a json object
-		try
-		{
+		// Test to see if it's a JSON object
+		try {
 			receivedData = crow::json::load(req.body);
-
-			if (!receivedData)
-			{
-				return crow::response(400, "Invalid JSON format"); //wrong data type
+			if (!receivedData) {
+				return crow::response(400, "Invalid JSON format"); // wrong data type
 			}
 		}
 		catch (const std::exception& e) {
 			return crow::response(400, e.what());
 		}
-
 
 		// 4x4 Matrix
 		pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation;
@@ -201,70 +197,91 @@ int main()
 		// Extracting the 4x4 Matrix from JSON Object
 		try {
 			auto& matrixArray = receivedData;
-
 			int i = 0;
-			
+
 			// Iterate over the 4x4 matrix in receivedData
-			for (int j = 0; j < 4; j++) 
-			{
-				for (int k = 0; k < 4; k++)
-				{
-					//filling the transformation matrix, maybe
-					transformation(j, k) = matrixArray[i].d(); 
+			for (int j = 0; j < 4; j++) {
+				for (int k = 0; k < 4; k++) {
+					// filling the transformation matrix, maybe
+					transformation(j, k) = matrixArray[i].d();
 					i++;
 				}
 			}
 
-			//dereference the Pointcloud list to pointclouds
+			// Debug print transformation matrix
+			std::cout << "Transformation Matrix:" << std::endl;
+			std::cout << transformation << std::endl;
+
+			// Dereference the Pointcloud list to pointclouds
 			pcl::PointCloud<pcl::PointXYZ>::Ptr sor_cloud = pcList.front();
 			pcl::PointCloud<pcl::PointXYZ>::Ptr tar_cloud = pcList.back();
 
+			// Verify point cloud sizes
+			std::cout << "Source points: " << sor_cloud->size() << std::endl;
+			std::cout << "Target points: " << tar_cloud->size() << std::endl;
+
+			if (sor_cloud->empty() || tar_cloud->empty()) {
+				return crow::response(400, "One of the point clouds is empty");
+			}
+
 			// Apply the transformation matrix to the source point cloud
 			pcl::transformPointCloud(*sor_cloud, *sor_cloud, transformation);
-			
+
 			// Initialization of ICP and inputting the point clouds
 			pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
 			icp.setInputSource(sor_cloud);
 			icp.setInputTarget(tar_cloud);
 
+			// Ensure a reasonable number of iterations
+			icp.setMaximumIterations(50); 
+
+			// Enable verbose output for ICP
+			icp.setTransformationEpsilon(1e-8);
+			icp.setEuclideanFitnessEpsilon(1);
+
 			// The transformation into a Final "Output" Point Cloud
-			icp.align(*final_points);
+			try {
+				std::cout << "Starting ICP alignment..." << std::endl;
+				icp.align(*final_points);
 
-			// Crow JSON return object
-			crow::json::wvalue response;
+				// Crow JSON return object
+				crow::json::wvalue response;
 
-			// Check if the ICP worked
-			if (icp.hasConverged()) {
-				// Save the 4x4 Matrix
-				pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 finalTransformation = icp.getFinalTransformation();
+				// Check if the ICP worked
+				if (icp.hasConverged()) {
+					// Save the 4x4 Matrix
+					pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 finalTransformation = icp.getFinalTransformation();
 
-				// Convert Matrix to JSON
-				crow::json::wvalue matrix_json;
-				for (int i = 0; i < 4; ++i) {
-					for (int j = 0; j < 4; ++j) {
-						matrix_json[i][j] = finalTransformation(i, j);
+					// Convert Matrix to JSON
+					crow::json::wvalue matrix_json;
+					for (int i = 0; i < 4; ++i) {
+						for (int j = 0; j < 4; ++j) {
+							matrix_json[i][j] = finalTransformation(i, j);
+						}
 					}
+
+					response["message"] = "Request processed successfully";
+					response["transformation"] = matrix_json.dump();
+				}
+				else {
+					// In case it didn't work
+					response["message"] = "ICP did not converge";
 				}
 
-				response["message"] = "Request processed successfully";
-				response["transformation"] = matrix_json.dump();
+				// Crow response
+				crow::response res(response);
+				// Headers:
+				res.add_header("Access-Control-Allow-Origin", URL);
+				return res;
 			}
-			else {
-				// In case it didn't work
-				response["message"] = "ICP did not converge";
+			catch (const std::exception& e) {
+				std::cerr << "Exception during ICP alignment: " << e.what() << std::endl;
+				return crow::response(400, e.what());
 			}
-
-			// Crow response
-			crow::response res(response);
-			// Headers:
-			res.add_header("Access-Control-Allow-Origin", URL);
-			return res;
 		}
 		catch (const std::exception& e) {
 			return crow::response(400, e.what());
 		}
-
-
 			});
 
 
