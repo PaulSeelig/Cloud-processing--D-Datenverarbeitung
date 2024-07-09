@@ -164,6 +164,8 @@ function MiniView(evlement) {
         })
         document.getElementById('miniViewContainer').appendChild(btn);
     }
+
+    RemoveFile(evlement)
 }
 function Delay(milliseconds) {
     return new Promise(resolve => {
@@ -202,16 +204,15 @@ async function AddView(combineFiles, tMatrix, params1, params2) {
     
 }
 
-
 async function RemoveFile(evlement) {
     try {
         const view = evlement.parentNode.parentNode;
 
         var res = await scanService.Delete3DFile(evlement)
-        var viewCont = document.getElementById("objViewCont");
-        await viewCont.removeChild(view);
-        Delay(1000)
-        await AddView(null);
+        //var viewCont = document.getElementById("objViewCont");
+        //await viewCont.removeChild(view);
+        //Delay(1000)
+        //await AddView(null);
         AddToDialog(res)
     }
     catch (error) {
