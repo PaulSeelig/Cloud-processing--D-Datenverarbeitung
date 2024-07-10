@@ -223,14 +223,7 @@ int main()
 			return crow::response(400, "One of the point clouds is empty");
 		}
 
-		// Apply the transformation matrix to the source point cloud
-		pcl::transformPointCloud(*sor_cloud, *sor_cloud, transformation);
-
 		// Print first few points of source cloud after transformation
-		std::cout << "Source cloud points after transformation:" << std::endl;
-		for (size_t i = 0; i < std::min<size_t>(sor_cloud->size(), 5); ++i) {
-			std::cout << sor_cloud->points[i] << std::endl;
-		}
 
 		// Initialize ICP Non-Linear and set parameters
 		pcl::IterativeClosestPointNonLinear<pcl::PointXYZ, pcl::PointXYZ> icp_nl;
@@ -250,7 +243,7 @@ int main()
 		// Align the point clouds
 		try {
 			std::cout << "Starting ICP Non-Linear alignment..." << std::endl;
-			icp_nl.align(*final_points);
+			icp_nl.align(*final_points, transformation);
 
 			// Check if the ICP worked
 			if (icp_nl.hasConverged()) {
