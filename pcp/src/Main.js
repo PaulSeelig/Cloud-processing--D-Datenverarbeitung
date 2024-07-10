@@ -247,7 +247,7 @@ async function ImportFile(eventtarget) {
                 await scanService.Import3dScan(file[0], fileEnd);
                 console.log('File successfully uploaded and validated:');
                 //response.onload = AddToDialog(response.text());
-                AddToDialog(`File successfully uploaded and validated`);
+                AddToDialog(`File successfully uploaded`);
                 //const text = await response.text(); // Hier wird der Text korrekt ausgelesen
                 //console.log(text);
             }
