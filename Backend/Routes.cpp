@@ -20,14 +20,39 @@
 #include <pcl/point_types.h>
 #include <pcl/PolygonMesh.h>
 
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/filter.h>
+#include <pcl/features/normal_3d.h>
+
 #include <pcl/registration/icp.h> 
 #include <pcl/registration/icp_nl.h>
+#include <pcl/registration/transforms.h>
 #include <pcl/registration/transformation_estimation_svd.h>
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/io/ply_io.h>
 #include <pcl/io/vtk_io.h>
 //#include <pcl/io/vtk_lib_io.h> //this needs the vtk library and just leads to errors
+
+// Define a new point representation for < x, y, z, curvature >
+//This is needed for a better icp that takes the surface of the object into account
+class MyPointRepresentation : public pcl::PointRepresentation<pcl::PointNormal>
+{
+	using pcl::PointRepresentation<pcl::PointNormal>::nr_dimensions_;
+public:
+	MyPointRepresentation()
+	{
+		nr_dimensions_ = 4;
+	}
+
+	virtual void copyToFloatArray(const pcl::PointNormal& p, float* out) const
+	{
+		out[0] = p.x;
+		out[1] = p.y;
+		out[2] = p.z;
+		out[3] = p.curvature;
+	}
+};
 
 crow::json::wvalue::list matrixToJson(pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation)
 {
@@ -45,6 +70,7 @@ crow::json::wvalue::list matrixToJson(pcl::registration::TransformationEstimatio
 	return matrix_array;
 }
 
+//Saves the incoming content to a file 
 void saveFile(const std::string& filePath, bool isBinary, std::string& fileContent)
 {
 	std::ofstream outFile;
@@ -231,91 +257,133 @@ int main()
 	CROW_ROUTE(app, "/mergeImportedFiles").methods("POST"_method)
 		([URL, &pcList, final_points](const crow::request& req) {
 		
-		// JSON store object
-		crow::json::rvalue receivedData;
+			// JSON store object
+			crow::json::rvalue receivedData;
 
-		// Crow response
-		crow::response res;
-		// Headers:
-		res.add_header("Access-Control-Allow-Origin", URL);
+			// Crow response
+			crow::response res;
+			// Headers:
+			res.add_header("Access-Control-Allow-Origin", URL);
 
-		// Crow JSON return object
-		crow::json::wvalue response;
+			// Crow JSON return object
+			crow::json::wvalue response;
 		
-		// Test to see if it's a JSON object
-		try {
-			receivedData = crow::json::load(req.body);
-			if (!receivedData) {
+			// Test to see if it's a JSON object
+			try {
+				receivedData = crow::json::load(req.body);
+				if (!receivedData) {
+					res.code = 400;
+					res.body = "Object was not a JSON";
+					return res;
+				}
+			}
+			catch (const std::exception& e) {
+				return crow::response(400, e.what());
+			}
+
+			// The 4x4 Matrix that was last applied to the data set, This is the initial guess later used
+			pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation;
+
+			// Extracting the 4x4 Matrix from JSON Object
+			auto& matrixArray = receivedData;
+			int i = 0;
+
+			// Iterate over the 4x4 matrix in receivedData
+			for (int j = 0; j < 4; j++) {
+				for (int k = 0; k < 4; k++) {
+					// Filling the transformation matrix
+					transformation(j, k) = matrixArray[i].d();
+					i++;
+				}
+			}
+
+			// Dereferencing the Pointclouds inside the Pointcloud List
+			pcl::PointCloud<pcl::PointXYZ>::Ptr sor_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+			pcl::PointCloud<pcl::PointXYZ>::Ptr tar_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+			//To help with downsizing the files
+			pcl::VoxelGrid<pcl::PointXYZ> grid;
+
+			////With large datasets its easier to downsize
+			//grid.setLeafSize(0.05f, 0.05f, 0.05f);
+			//grid.setInputCloud(pcList.back());
+			//grid.filter(*sor_cloud);
+
+			//grid.setInputCloud(pcList.front());
+			//grid.filter(*tar_cloud);
+
+			//Dataset was too small so this will suffice
+			sor_cloud = pcList.back();
+			tar_cloud = pcList.front();
+
+			//Applying initial guess to source cloud
+			pcl::transformPointCloud(*sor_cloud, *sor_cloud, transformation);
+
+			//Verifying the validity of Pointclouds
+			if (sor_cloud->empty() || tar_cloud->empty()) {
 				res.code = 400;
-				res.body = "Object was not a JSON";
+				res.body = "One of the Pointclouds was empty!";
 				return res;
 			}
-		}
-		catch (const std::exception& e) {
-			return crow::response(400, e.what());
-		}
 
-		// The 4x4 Matrix that was last applied to the data set, This is the initial guess later used
-		pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation;
+			// Compute surface normals and curvature
+			pcl::PointCloud<pcl::PointNormal>::Ptr points_with_normals_src(new pcl::PointCloud<pcl::PointNormal>);
+			pcl::PointCloud<pcl::PointNormal>::Ptr points_with_normals_tgt(new pcl::PointCloud<pcl::PointNormal>);
 
-		// Extracting the 4x4 Matrix from JSON Object
-		auto& matrixArray = receivedData;
-		int i = 0;
+			pcl::NormalEstimation<pcl::PointXYZ, pcl::PointNormal> norm_est;
+			pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
+			norm_est.setSearchMethod(tree);
+			norm_est.setKSearch(30);
 
-		// Iterate over the 4x4 matrix in receivedData
-		for (int j = 0; j < 4; j++) {
-			for (int k = 0; k < 4; k++) {
-				// Filling the transformation matrix
-				transformation(j, k) = matrixArray[i].d();
-				i++;
-			}
-		}
+			norm_est.setInputCloud(sor_cloud);
+			norm_est.compute(*points_with_normals_src); //now this shit fails here
+			pcl::copyPointCloud(*sor_cloud, *points_with_normals_src);
 
-		// Dereferencing the Pointclouds inside the Pointcloud List
-		pcl::PointCloud<pcl::PointXYZ>::Ptr sor_cloud = pcList.front();
-		pcl::PointCloud<pcl::PointXYZ>::Ptr tar_cloud = pcList.back();
+			norm_est.setInputCloud(tar_cloud);
+			norm_est.compute(*points_with_normals_tgt);
+			pcl::copyPointCloud(*tar_cloud, *points_with_normals_tgt);
 
-		//Verifying the validity of Pointclouds
-		if (sor_cloud->empty() || tar_cloud->empty()) {
-			res.code = 400;
-			res.body = "One of the Pointclouds was empty!";
-		}
+			// Instantiate custom point representation (defined above)
+			MyPointRepresentation point_representation;
+			float alpha[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			point_representation.setRescaleValues(alpha);
 
-		// Initialize ICP Non-Linear and set parameters
-		pcl::IterativeClosestPointNonLinear<pcl::PointXYZ, pcl::PointXYZ> icp_nl;
+			// Align with surface normals and curveature 
+			pcl::IterativeClosestPointNonLinear<pcl::PointNormal, pcl::PointNormal> reg;
+			reg.setTransformationEpsilon(1e-6);
+			reg.setMaxCorrespondenceDistance(0.1);  // 10 cm
+			//sets icp to understand curvature
+			reg.setPointRepresentation(std::make_shared<const MyPointRepresentation>(point_representation));
+			//Inputs both clouds
+			reg.setInputSource(points_with_normals_src);
+			reg.setInputTarget(points_with_normals_tgt);
 
-		//no idea what this does
-		icp_nl.setTransformationEpsilon(1e-6);
+			Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity(), prev, targetToSource;
+			pcl::PointCloud<pcl::PointNormal>::Ptr reg_result = points_with_normals_src;
+			reg.setMaximumIterations(2);
 
-		//This might need to change to be variable
-		icp_nl.setMaxCorrespondenceDistance(0.1); 
-
-		icp_nl.setInputSource(sor_cloud);
-		icp_nl.setInputTarget(tar_cloud);
-
-		// Also might be needed
-		// icp_nl.setMaximumIterations(100); 
-
-		// Align the point clouds
-		try {
-			icp_nl.align(*final_points, transformation);
-
-			// Check if the ICP worked
-			if (icp_nl.hasConverged()) 
+			for (int i = 0; i < 30; ++i)
 			{
-				response["matrix"] = std::move(matrixToJson(icp_nl.getFinalTransformation()));
-				res.body = response.dump();
+				points_with_normals_src = reg_result;
+				reg.setInputSource(points_with_normals_src);
+				reg.align(*reg_result);
+
+				Ti = reg.getFinalTransformation() * Ti;
+
+				if (fabs((reg.getLastIncrementalTransformation() - prev).sum()) < reg.getTransformationEpsilon())
+					reg.setMaxCorrespondenceDistance(reg.getMaxCorrespondenceDistance() - 0.001);
+
+				prev = reg.getLastIncrementalTransformation();
 			}
-			else {
-				// In case it didn't work
-				res.body = "ICP did not converge";
-			}
+
+			//Crow response
+			crow::json::wvalue JSONres;
+			JSONres["matrix"] = matrixToJson(targetToSource);
+			res.body = JSONres.dump();
+			res.code = 200;
+			res.add_header("Content-Type", "application/json");
 
 			return res;
-		}
-		catch (const std::exception& e) {
-			return crow::response(400, e.what());
-		}
 		
 			});
 
