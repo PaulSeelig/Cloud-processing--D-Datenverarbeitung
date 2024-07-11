@@ -4,21 +4,14 @@ class ScanService {
     }
 
 
-    async Delete3DFile(file) {
-        var data_ = ""
-        const formData = new FormData();
-        formData.append("FILE", file);
+    async Delete3DFile(fileIndex) {
         await fetch(`${this.baseUrl}/delete3DFile`, {
             method: 'Post',
-            body: formData
-        }).then(response => response.text())
-            .then(data => {
-                data_ = data
-                console.log(data);
+            body: fileIndex
+        }).then(response => {
+            response.text();
+            return response;
             });
-
-
-        return data_;
     }
 
     async Import3dScan(fileContent, fileEnd) {

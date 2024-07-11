@@ -2,6 +2,7 @@ import RenderFileOnCanvas from "./Rendering";
 import ScanService from "./services/3DScanService"
 
 var DialogLine = 1;
+var fileIndex = 0;
 
 const MaxWindows = 8;
 
@@ -107,14 +108,18 @@ function Combine() {
                                 view.querySelector('canvas').textContent = ICP_processed_matrix);
                     });
                 });
+                if (!(canv.ariaDescription && canv.ariaDescription)) {
+                    const observer = new MutationObserver(function () { Combine() });
+                    const observer2 = new MutationObserver(function () { Combine() });
+                    // Call 'observe' on the MutationObserver instance, specifying the element to observe
+                    observer.observe(canv, { childList: true });
 
-                const observer = new MutationObserver(function () { Combine() });
-                const observer2 = new MutationObserver(function () { Combine() });
-                // Call 'observe' on the MutationObserver instance, specifying the element to observe
-                observer.observe(canv, { childList: true });
+                    // Call 'observe' on the MutationObserver instance, specifying the element to observe
+                    observer2.observe(canv2, { childList: true });
+                    canv.ariaDescription = "f";
+                    canv2.ariaDescription = "f";
+                }
 
-                // Call 'observe' on the MutationObserver instance, specifying the element to observe
-                observer2.observe(canv2, { childList: true });
             }
         });
     }
@@ -238,6 +243,7 @@ async function ImportFile(eventtarget) {
         else
         {
             const view = eventtarget.parentNode.parentNode;
+            view.ariaValueNow = fileIndex++;
             visualFile(view, file)
 
             // Modified By Audrik --- 
@@ -320,6 +326,7 @@ async function RemoveView(evlement, doDelete) {
             view.classList.add('minimized');
             await Delay(1000);
             viewCont.removeChild(view);
+            view.ariaValueNow? scanService.Delete3DFile(view.ariaValueNow) : '';
         }
         if (viewCont.childElementCount == (MaxWindows - 1)) {
             document.getElementById('Addbtn').classList.remove("not_accessible");
