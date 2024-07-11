@@ -107,14 +107,18 @@ function Combine() {
                                 view.querySelector('canvas').textContent = ICP_processed_matrix);
                     });
                 });
+                if (!(canv.ariaDescription && canv.ariaDescription)) {
+                    const observer = new MutationObserver(function () { Combine() });
+                    const observer2 = new MutationObserver(function () { Combine() });
+                    // Call 'observe' on the MutationObserver instance, specifying the element to observe
+                    observer.observe(canv, { childList: true });
 
-                const observer = new MutationObserver(function () { Combine() });
-                const observer2 = new MutationObserver(function () { Combine() });
-                // Call 'observe' on the MutationObserver instance, specifying the element to observe
-                observer.observe(canv, { childList: true });
+                    // Call 'observe' on the MutationObserver instance, specifying the element to observe
+                    observer2.observe(canv2, { childList: true });
+                    canv.ariaDescription = "f";
+                    canv2.ariaDescription = "f";
+                }
 
-                // Call 'observe' on the MutationObserver instance, specifying the element to observe
-                observer2.observe(canv2, { childList: true });
             }
         });
     }
