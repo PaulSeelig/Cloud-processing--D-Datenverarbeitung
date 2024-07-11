@@ -180,6 +180,7 @@ int main()
 		([pcList](const crow::request& req)
 			{
 				
+				int fileIndex = stoi(req.body);
 
 				//clear the saved Data possible PCD
 				

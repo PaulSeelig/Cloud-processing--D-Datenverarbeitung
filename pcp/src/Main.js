@@ -2,6 +2,7 @@ import RenderFileOnCanvas from "./Rendering";
 import ScanService from "./services/3DScanService"
 
 var DialogLine = 1;
+var fileIndex = 0;
 
 const MaxWindows = 8;
 
@@ -242,6 +243,7 @@ async function ImportFile(eventtarget) {
         else
         {
             const view = eventtarget.parentNode.parentNode;
+            view.ariaValueNow = fileIndex++;
             visualFile(view, file)
 
             // Modified By Audrik --- 
@@ -324,6 +326,7 @@ async function RemoveView(evlement, doDelete) {
             view.classList.add('minimized');
             await Delay(1000);
             viewCont.removeChild(view);
+            view.ariaValueNow? scanService.Delete3DFile(view.ariaValueNow) : '';
         }
         if (viewCont.childElementCount == (MaxWindows - 1)) {
             document.getElementById('Addbtn').classList.remove("not_accessible");
