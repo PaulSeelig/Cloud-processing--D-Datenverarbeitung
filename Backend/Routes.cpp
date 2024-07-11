@@ -29,7 +29,23 @@
 #include <pcl/io/vtk_io.h>
 //#include <pcl/io/vtk_lib_io.h> //this needs the vtk library and just leads to errors
 
-static void saveFile(const std::string& filePath, bool isBinary, std::string& fileContent)
+crow::json::wvalue::list matrixToJson(pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation)
+{
+	//response transformation matrix
+	crow::json::wvalue json_matrix;
+	crow::json::wvalue::list matrix_array;
+
+	//4x4 matrix -> json object
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			matrix_array.push_back(transformation(i, j));
+		}
+	}
+
+	return matrix_array;
+}
+
+void saveFile(const std::string& filePath, bool isBinary, std::string& fileContent)
 {
 	std::ofstream outFile;
 	if (isBinary)
@@ -183,14 +199,21 @@ int main()
 		// JSON store object
 		crow::json::rvalue receivedData;
 
+		// Crow response
+		crow::response res;
+		// Headers:
+		res.add_header("Access-Control-Allow-Origin", URL);
+
 		// Crow JSON return object
 		crow::json::wvalue response;
-
+		
 		// Test to see if it's a JSON object
 		try {
 			receivedData = crow::json::load(req.body);
 			if (!receivedData) {
-				return crow::response(400, "Invalid JSON format"); 
+				res.code = 400;
+				res.body = "Object was not a JSON";
+				return res;
 			}
 		}
 		catch (const std::exception& e) {
@@ -201,7 +224,6 @@ int main()
 		pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation;
 
 		// Extracting the 4x4 Matrix from JSON Object
-		
 		auto& matrixArray = receivedData;
 		int i = 0;
 
@@ -220,10 +242,9 @@ int main()
 
 		//Verifying the validity of Pointclouds
 		if (sor_cloud->empty() || tar_cloud->empty()) {
-			return crow::response(400, "One of the point clouds is empty");
+			res.code = 400;
+			res.body = "One of the Pointclouds was empty!";
 		}
-
-		// Print first few points of source cloud after transformation
 
 		// Initialize ICP Non-Linear and set parameters
 		pcl::IterativeClosestPointNonLinear<pcl::PointXYZ, pcl::PointXYZ> icp_nl;
@@ -242,34 +263,19 @@ int main()
 
 		// Align the point clouds
 		try {
-			std::cout << "Starting ICP Non-Linear alignment..." << std::endl;
 			icp_nl.align(*final_points, transformation);
 
 			// Check if the ICP worked
-			if (icp_nl.hasConverged()) {
-				// Save the 4x4 Matrix
-				pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 finalTransformation = icp_nl.getFinalTransformation();
-
-				// Convert Matrix to JSON
-				crow::json::wvalue matrix_json;
-				for (int i = 0; i < 4; ++i) {
-					for (int j = 0; j < 4; ++j) {
-						matrix_json[i][j] = finalTransformation(i, j);
-					}
-				}
-
-				response["message"] = "Request processed successfully";
-				response["transformation"] = matrix_json.dump();
+			if (icp_nl.hasConverged()) 
+			{
+				response["matrix"] = std::move(matrixToJson(icp_nl.getFinalTransformation()));
+				res.body = response.dump();
 			}
 			else {
 				// In case it didn't work
-				response["message"] = "ICP did not converge";
+				res.body = "ICP did not converge";
 			}
 
-			// Crow response
-			crow::response res(response);
-			// Headers:
-			res.add_header("Access-Control-Allow-Origin", URL);
 			return res;
 		}
 		catch (const std::exception& e) {
@@ -341,20 +347,10 @@ int main()
 				pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation;
 				trans_est.estimateRigidTransformation(*source_points, *target_points, transformation);
 				
-				//response transformation matrix
-				crow::json::wvalue json_matrix;
-				crow::json::wvalue::list matrix_array;
-
-				//4x4 matrix -> json object
-				for (int i = 0; i < 4; ++i) {
-					for (int j = 0; j < 4; ++j) {
-						matrix_array.push_back(transformation(i, j));
-					}
-				}
-
-				json_matrix["matrix"] = std::move(matrix_array);
-
-				res.body = json_matrix.dump();
+				//Crow response
+				crow::json::wvalue JSONres;
+				JSONres["matrix"] = matrixToJson(transformation);
+				res.body = JSONres.dump();
 				res.code = 200;
 				res.add_header("Content-Type", "application/json");
 

@@ -164,8 +164,6 @@ function MiniView(evlement) {
         })
         document.getElementById('miniViewContainer').appendChild(btn);
     }
-
-    RemoveFile(evlement)
 }
 function Delay(milliseconds) {
     return new Promise(resolve => {
