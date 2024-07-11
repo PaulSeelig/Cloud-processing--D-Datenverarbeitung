@@ -78,8 +78,7 @@ int main()
 	//Output pointcloud
 	pcl::PointCloud<pcl::PointXYZ>::Ptr final_points(new pcl::PointCloud<pcl::PointXYZ>);
 
-	
-
+	//Importing and saving the recieved Data in Pointclouds
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
 		[URL, &pcList](const crow::request& req)
 		{
@@ -174,23 +173,59 @@ int main()
 			return res;
 		});
 
-
-	//Delete Handler to delete saved point clouds
+	//Delete Handler to delete the saved point cloud
 	CROW_ROUTE(app, "/delete3DFile").methods(crow::HTTPMethod::Post)
-		([pcList](const crow::request& req)
+		([&pcList, URL](const crow::request& req)
 			{
-				
+				crow::json::rvalue receivedIndex;
 
-				//clear the saved Data possible PCD
-				
-				//checks if deleting was succesful and sends back the appropriete response
-				if (true) {
-					return crow::response("Point Clouds have been deleted");
+				crow::response res;
+				res.add_header("Access-Control-Allow-Origin", URL);
+
+				try {
+					receivedIndex = crow::json::load(req.body);
+				}
+				catch (const std::exception& e) {
+					res.code = 400;
+					res.body = "Object was not a JSON";
+					return res;
+				}
+
+				int index;
+				try {
+					index = receivedIndex[0].i();
+				}
+				catch (const std::exception& e) {
+					res.code = 400;
+					res.write("Invalid index");
+					return res;
+				}
+
+				if (index < 0 || index >= pcList.size()) {
+					res.code = 400;
+					res.body = "Index out of range";
+					return res;
+				}
+
+				// Iterating through the list to find the element at the given index
+				auto it = pcList.begin();
+				std::advance(it, index);
+
+				// Erase the element at the given index
+				pcList.erase(it);
+
+				// Checks if deleting was successful and sends back the appropriate response
+				if (index >= pcList.size() || std::next(pcList.begin(), index) == pcList.end()) {
+					res.code = 200;
+					res.body = "Point Clouds have been deleted";
 				}
 				else {
-					return crow::response("Error while deleting");
+					res.code = 400;
+					res.body = "Error while deleting";
 				}
+				return res;
 			});
+
 
 	//ICP Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/mergeImportedFiles").methods("POST"_method)
