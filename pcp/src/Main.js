@@ -209,6 +209,9 @@ async function AddView(combineFiles, tMatrix, params1, params2) {
     
 }
 
+function RemoveFiles() {
+    RemoveFile(null)
+}
 async function RemoveFile(evlement) {
     try {
         const view = evlement.parentNode.parentNode;
@@ -237,7 +240,7 @@ async function ImportFile(eventtarget) {
     if (eventtarget.files.length > 0)
     {
         const file = [eventtarget.files[0]];
-        var fileEnd = '.' + file[0].name.split(".").at(-1);
+        var fileEnd = '.' + file[0].name.split(".").at(-1).toLowerCase();
         if ( ! (fileEnd == '.ply' || fileEnd == '.stl' || fileEnd == '.xyz') )
         {
             AddToDialog('this doesn\'t seem to be the correct format. ... We\'re not supporting ' + fileEnd + '-formated files... we only work with .ply .xyz & .stl -formats for now');
@@ -246,11 +249,12 @@ async function ImportFile(eventtarget) {
         {
             const view = eventtarget.parentNode.parentNode;
             view.ariaValueNow = fileIndex++;
-            visualFile(view, file)
+            
 
             // Modified By Audrik --- 
             try {
                 await scanService.Import3dScan(file[0], fileEnd);
+                visualFile(view, file)
                 console.log('File successfully uploaded and validated:');
                 //response.onload = AddToDialog(response.text());
                 AddToDialog(`File successfully uploaded`);
@@ -342,5 +346,6 @@ async function RemoveView(evlement, doDelete) {
         AddToDialog(dias[dialin]);
         dialin += dialin < (dias.length - 1) ? 1 : 0;
     }
+    RemoveFile(evlement)
 }
 window.addEventListener("load", setup);

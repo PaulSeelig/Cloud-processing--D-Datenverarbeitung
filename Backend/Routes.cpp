@@ -375,16 +375,22 @@ int main()
 
 				prev = reg.getLastIncrementalTransformation();
 			}
-
 			//Crow response
 			crow::json::wvalue JSONres;
-			JSONres["matrix"] = matrixToJson(targetToSource);
-			res.body = JSONres.dump();
-			res.code = 200;
 			res.add_header("Content-Type", "application/json");
 
+			if (reg.hasConverged())
+			{
+				JSONres["matrix"] = matrixToJson(targetToSource);
+				res.body = JSONres.dump();
+				res.code = 200;
+			}
+			else
+			{
+				res.body = "icp did not converge";
+				res.code = 400;
+			}
 			return res;
-		
 			});
 
 
