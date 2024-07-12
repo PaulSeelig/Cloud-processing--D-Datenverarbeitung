@@ -99,14 +99,14 @@ int main()
 	std::string URL = "http://localhost:5173";
 
 	//Point Clouds where the imported Data gets Saved, can then be deleted with the /delete3DFiles endpoint
-	std::list<pcl::PointCloud<pcl::PointXYZ>::Ptr> pcList;
+	std::unordered_map<std::string, pcl::PointCloud<pcl::PointXYZ>::Ptr> pcMap;
 
 	//Output pointcloud
 	pcl::PointCloud<pcl::PointXYZ>::Ptr final_points(new pcl::PointCloud<pcl::PointXYZ>);
 
 	//Importing and saving the recieved Data in Pointclouds
 	CROW_ROUTE(app, "/Import3dScan").methods(crow::HTTPMethod::Post)(
-		[URL, &pcList](const crow::request& req)
+		[URL, &pcMap](const crow::request& req)
 		{
 			crow::multipart::message msg(req);
 
@@ -114,6 +114,7 @@ int main()
 			res.add_header("Access-Control-Allow-Origin", URL);
 
 			std::string fileType = msg.parts[1].body;
+			std::string fileName = msg.parts[2].body;
 			std::string fileContent = msg.parts[0].body;
 			std::string filePath;
 
@@ -130,7 +131,7 @@ int main()
 
 				pcl::io::loadPLYFile(filePath, *cloud);
 
-				pcList.push_back(cloud);
+				pcMap[fileName] = cloud;
 
 				std::remove(filePath.c_str());
 
@@ -169,7 +170,6 @@ int main()
 
 					std::istringstream iss(line);
 					pcl::PointXYZ point;
-					std::cout << "Reading line: " << line << std::endl;
 					if (!(iss >> point.x >> point.y >> point.z))
 					{
 						std::remove(filePath.c_str());
@@ -182,11 +182,11 @@ int main()
 				cloud->is_dense = true;
 
 				inFile.close();
-				pcList.push_back(cloud);
+				pcMap[fileName] = cloud;
 				std::remove(filePath.c_str());
 			}
 
-			if (!pcList.empty() && pcList.back() == cloud)
+			if (!pcMap.empty() && pcMap.find(fileName) != pcMap.end())
 			{
 				res.body = "File uploaded succesfully";
 				res.code = 200;
@@ -201,49 +201,62 @@ int main()
 
 	//Delete Handler to delete the saved point cloud
 	CROW_ROUTE(app, "/delete3DFile").methods(crow::HTTPMethod::Post)
-		([&pcList, URL](const crow::request& req)
+		([&pcMap, URL](const crow::request& req)
 			{
-				crow::json::rvalue receivedIndex;
-
 				crow::response res;
 				res.add_header("Access-Control-Allow-Origin", URL);
 
+				//Key to find and delete inside the has map
+				std::string key;
+
 				try {
-					receivedIndex = crow::json::load(req.body);
+					key = req.body;
 				}
 				catch (const std::exception& e) {
 					res.code = 400;
-					res.body = "Object was not a JSON";
+					res.body = "Object was not a String";
 					return res;
 				}
 
-				int index;
 				try {
-					index = receivedIndex[0].i();
+					key = receivedKey[0].s();
 				}
 				catch (const std::exception& e) {
 					res.code = 400;
-					res.write("Invalid index");
+					res.write("Invalid key");
 					return res;
 				}
 
-				if (index < 0 || index >= pcList.size()) {
+				if (key == "*") {
+					// Clear the entire map
+					pcMap.clear();
+
+					// Check if the map is empty and send back the appropriate response
+					if (pcMap.empty()) {
+						res.code = 200;
+						res.body = "All Point Clouds have been deleted";
+					}
+					else {
+						res.code = 400;
+						res.body = "Error while deleting all Point Clouds";
+					}
+					return res;
+				}
+
+				auto it = pcMap.find(key);
+				if (it == pcMap.end()) {
 					res.code = 400;
-					res.body = "Index out of range";
+					res.body = "Key not found";
 					return res;
 				}
 
-				// Iterating through the list to find the element at the given index
-				auto it = pcList.begin();
-				std::advance(it, index);
-
-				// Erase the element at the given index
-				pcList.erase(it);
+				// Erase the element with the given key
+				pcMap.erase(it);
 
 				// Checks if deleting was successful and sends back the appropriate response
-				if (index >= pcList.size() || std::next(pcList.begin(), index) == pcList.end()) {
+				if (pcMap.find(key) == pcMap.end()) {
 					res.code = 200;
-					res.body = "Point Clouds have been deleted";
+					res.body = "Point Cloud has been deleted";
 				}
 				else {
 					res.code = 400;
@@ -255,7 +268,7 @@ int main()
 
 	//ICP Handler sends back a 4x4 transformation Matrix
 	CROW_ROUTE(app, "/mergeImportedFiles").methods("POST"_method)
-		([URL, &pcList, final_points](const crow::request& req) {
+		([URL, &pcMap, final_points](const crow::request& req) {
 		
 			// JSON store object
 			crow::json::rvalue receivedData;
@@ -285,7 +298,7 @@ int main()
 			pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ>::Matrix4 transformation;
 
 			// Extracting the 4x4 Matrix from JSON Object
-			auto& matrixArray = receivedData;
+			auto& matrixArray = receivedData["matrix"];
 			int i = 0;
 
 			// Iterate over the 4x4 matrix in receivedData
@@ -312,9 +325,17 @@ int main()
 			//grid.setInputCloud(pcList.front());
 			//grid.filter(*tar_cloud);
 
-			//Dataset was too small so this will suffice
-			sor_cloud = pcList.back();
-			tar_cloud = pcList.front();
+			try {
+				// Retrieve the point clouds from the map using the keys
+				sor_cloud = pcMap.at(receivedData["fileName2"].s());
+				tar_cloud = pcMap.at(receivedData["fileName1"].s());
+			}
+			catch (const std::out_of_range& e) {
+				// Handle the case where the key is not found
+				res.code = 404;
+				res.body = "Key not found in map";
+				return res;
+			}
 
 			//Applying initial guess to source cloud
 			pcl::transformPointCloud(*sor_cloud, *sor_cloud, transformation);

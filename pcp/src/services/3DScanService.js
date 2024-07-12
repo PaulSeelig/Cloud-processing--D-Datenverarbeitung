@@ -43,7 +43,7 @@ class ScanService {
             });
     }
 
-    async ICPmerge(matrix) {
+    async ICPmerge(matrix) { //[Matrix] = matrix ; [Filename1] [filname2]
         await fetch(`${this.baseUrl}/mergeImportedFiles`, {
             method: 'POST',
             body: matrix,
