@@ -14,10 +14,12 @@ class ScanService {
             });
     }
 
-    async Import3dScan(fileContent, fileEnd) {
+    async Import3dScan(file, fileEnd) {
         const formData = new FormData();
-        formData.append('File', fileContent);
-        formData.append('Name', fileEnd);
+        formData.append('FileContent', file);
+        formData.append('FileEnd', fileEnd);
+        formData.append('Name', file.name);
+
 
         const response = await fetch(`${this.baseUrl}/Import3dScan`, {
             method: 'POST',
@@ -31,23 +33,14 @@ class ScanService {
     }
 
     async PickPointsMerge(points) {
-        var answer = "";
         await fetch(`${this.baseUrl}/pointsPicked`, {
             method: 'POST',
             body: points,
             redirect: "follow"
         }).then(response => response.text())
             .then(data => {
-                answer = data;
+                return data;
             });
-        //console.log(response)
-
-
-        //if (!response.ok) {
-        //    throw new Error(`HTTP error! Status: ${response.status}`);
-        //}
-
-        return answer;
     }
 
     async ICPmerge(matrix) {

@@ -98,15 +98,21 @@ function Combine() {
             else {
                 var params1 = [canv.parentNode.querySelector('[name="pointsize"]'), canv.parentNode.querySelector('[name="colors"]')];
                 var params2 = [canv2.parentNode.querySelector('[name="pointsize"]'), canv2.parentNode.querySelector('[name="colors"]')];
+
                 AddView(files, JSON.parse(resp), params1, params2)
                     .then(view => {
-                    view.querySelector('.ICPBtn').classList.remove('hidden');
-                    view.querySelector('.ICPBtn').addEventListener('click', function () {
-                        scanService.ICPmerge(view.querySelector('canvas').textContent)
-                            .then(
-                            ICP_processed_matrix =>
-                                view.querySelector('canvas').textContent = ICP_processed_matrix);
-                    });
+                        view.querySelector('.ICPBtn').classList.remove('hidden');
+                        view.querySelector('.Download').classList.remove('hidden');
+
+                        view.querySelector('.ICPBtn').addEventListener('click', function () {
+                            scanService.ICPmerge(view.querySelector('canvas').textContent)
+                                .then(ICP_processed_matrix => {
+                                    view.querySelector('canvas').textContent = ICP_processed_matrix;
+                                })
+                        });
+                        view.querySelector('.Download').addEventListener('click', function () {
+                            view.querySelector('canvas').textContent;
+                        });
                 });
                 if (!(canv.ariaDescription && canv.ariaDescription)) {
                     const observer = new MutationObserver(function () { Combine() });
@@ -125,10 +131,6 @@ function Combine() {
     }
 
 }
-//function ICPMerge()
-//{
-//    
-//}
 /**
  * Adds EventListener to new Buttons, when new ViewWindow is created.
  * (EventListener don't get cloned)
