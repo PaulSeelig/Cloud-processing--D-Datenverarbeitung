@@ -108,7 +108,7 @@ function Combine() {
                             scanService.ICPmerge(view.querySelector('canvas').textContent)
                                 .then(ICP_processed_matrix => {
                                     view.querySelector('canvas').textContent = ICP_processed_matrix;
-                                })
+                                });
                         });
                         view.querySelector('.Download').addEventListener('click', function () {
                             view.querySelector('canvas').textContent;
@@ -253,8 +253,8 @@ async function ImportFile(eventtarget) {
 
             // Modified By Audrik --- 
             try {
+                visualFile(view, file);
                 await scanService.Import3dScan(file[0], fileEnd);
-                visualFile(view, file)
                 console.log('File successfully uploaded and validated:');
                 //response.onload = AddToDialog(response.text());
                 AddToDialog(`File successfully uploaded`);

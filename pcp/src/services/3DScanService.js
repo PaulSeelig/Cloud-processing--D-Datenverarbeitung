@@ -33,14 +33,16 @@ class ScanService {
     }
 
     async PickPointsMerge(points) {
+        var answer = "";
         await fetch(`${this.baseUrl}/pointsPicked`, {
             method: 'POST',
             body: points,
             redirect: "follow"
         }).then(response => response.text())
             .then(data => {
-                return data;
+                answer = data;
             });
+        return answer;
     }
 
     async ICPmerge(matrix) { //[Matrix] = matrix ; [Filename1] [filname2]
