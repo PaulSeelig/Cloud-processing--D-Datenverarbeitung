@@ -218,15 +218,6 @@ int main()
 					return res;
 				}
 
-				try {
-					key = receivedKey[0].s();
-				}
-				catch (const std::exception& e) {
-					res.code = 400;
-					res.write("Invalid key");
-					return res;
-				}
-
 				if (key == "*") {
 					// Clear the entire map
 					pcMap.clear();
