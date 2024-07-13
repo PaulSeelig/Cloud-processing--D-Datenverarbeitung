@@ -11,43 +11,29 @@ const scanService = new ScanService('http://localhost:18080');
 //-----------------------
 const clone = document.querySelector('#objViewCont .objViewWin').cloneNode(true);
 function setup() {
-    document.getElementById("Addbtn").addEventListener("click", function () { AddView() }); // This is a stupid fix, don't touch it, unless ur solution really works ... Without the function(){ } the function is not working as a event but is executed once on setup.. idk why;
+    document.getElementById("Addbtn").addEventListener("click", function () { AddView() }); //If I'd write {"click", addview} (As this would be correct normally) the pointerEvent is passed into the function, but I need it to be undefined,.. This is a stupid fix, don't touch it, unless ur solution really works ... Without the function(){ } the function is not working as a event but is executed once on setup.. ;    
     document.getElementById("combine").addEventListener("click", function () {
-        this.disabled = true;
+        this.disabled = true; // avoids running multiple combine()-function simultanously, by disabling the button... else it would create multiple views with the same combined-models in it;
         Combine();
-        setTimeout(() => { this.disabled = false; }, 3000);
-            
-        
+        setTimeout(() => { this.disabled = false; }, 3000 ); // enabling the button after the Combine() has run through
     });
-
-    document.getElementById("saveBtn").addEventListener("click", SaveFile);
-
     document.querySelector('#MainOptions').addEventListener("change", event => { HideShowOptions(event.target) });
     document.querySelector('[name="maincolors"]').addEventListener("input", event => { document.querySelector('#objViewCont').style.setProperty("background", event.target.value); });
 
     document.getElementById("showOrHideDialog").addEventListener("click", function () {
-        if (document.querySelectorAll('#Dialog.minimized').length > 0) {
-            document.querySelector('#Dialog').classList.remove('minimized');
-        }
-        else {
-            document.querySelector('#Dialog').classList.add('minimized');
-        }
+        const dialist = document.querySelector('#Dialog').classList;
+        dialist.contains('minimized')? dialist.remove('minimized') : dialist.add('minimized');
     });
     clone.classList.add('minimized');
     AddToDialog("Good morning folks... ");
     AssignBtns();
     AddView();
-    AddToDialog("Using this site:");
-    AddToDialog("1st step: Add atleast 2 3D-files (only 1 per view) to the site");
-    AddToDialog("2nd step: set each 3 Points on the Models (with right- or doubleclick)");
-    AddToDialog("[The Points with the same color will align to each other and transform the models accordingly]");
-    AddToDialog("3rd step: press combine to see the files in one view aligned");
 }
-
-/**should enable a bright design, as an alternative to the for now dark-Design*/
-function SaveFile() {
-    AddToDialog("Uuuuhm... Nothing there to save...")
-}
+/**
+ * Checks if Combine-Conditions are met,
+ * if not, it returns a error-Message/a simple string
+ * @returns
+ */
 function CheckCombineConditions()
 {
     if (document.querySelector('#objViewCont').childElementCount >= MaxWindows)
@@ -61,23 +47,28 @@ function CheckCombineConditions()
         for (const imp of imports)
         {
             var canvas = imp.parentNode.parentNode.querySelector('canvas');
-            imp.files[0] ? files++ : "";
-            canvas.textContent != ''? PPoints++ : "";
+            imp.files[0] ? files++ : ""; canvas.textContent != '' && imp.files[0] ? PPoints++ : "";
         }
         return files < 2 ? "You need as least two files" : PPoints < 2 ? "you need atleast two models with each three pickedpoints on them, the first two are used for combine" : null;
     }
 }
-function Combine() {
-    const errormsg = CheckCombineConditions();
+/** combines two 3D-Models, if the CombineConditions are met. 
+ * Sets Observer on the 2 origin view-canvas in case the corresponding pickpoints are reset, the existing combine-view will only update the matrix, but not reload the Models*/
+function Combine()
+{
+    const errormsg = CheckCombineConditions(); 
     if (errormsg) { AddToDialog(errormsg) } 
-    else {
+    else
+    {
         const files = [];
         var PickPoints = [];
         var canv = null ;
         var canv2 = null;
-        for (const imp of document.querySelectorAll('[type="file"]')) {
+        for (const imp of document.querySelectorAll('[type="file"]'))
+        {
             const canvas = imp.parentNode.parentNode.querySelector('canvas');
-            if (imp.files[0] && canvas.textContent != '' && files.length < 3) {
+            if (imp.files[0] && canvas.textContent != '' && files.length < 3)
+            {
                 var pp = JSON.parse(canvas.textContent);
                 files.push(imp.files[0]);
                 PickPoints.push(pp[0], pp[1], pp[2]);
@@ -100,36 +91,37 @@ function Combine() {
                 var params2 = [canv2.parentNode.querySelector('[name="pointsize"]'), canv2.parentNode.querySelector('[name="colors"]')];
 
                 AddView(files, JSON.parse(resp), params1, params2)
-                    .then(view => {
+                    .then(view =>
+                    {
                         view.querySelector('.ICPBtn').classList.remove('hidden');
                         view.querySelector('.Download').classList.remove('hidden');
 
-                        view.querySelector('.ICPBtn').addEventListener('click', function () {
+                        view.querySelector('.ICPBtn').addEventListener('click', function ()
+                        {
                             scanService.ICPmerge(view.querySelector('canvas').textContent)
-                                .then(ICP_processed_matrix => {
+                                .then(ICP_processed_matrix =>
+                                {
                                     view.querySelector('canvas').textContent = ICP_processed_matrix;
                                 });
                         });
-                        view.querySelector('.Download').addEventListener('click', function () {
+                        view.querySelector('.Download').addEventListener('click', function ()
+                        {
                             view.querySelector('canvas').textContent;
                         });
-                });
-                if (!(canv.ariaDescription && canv.ariaDescription)) {
-                    const observer = new MutationObserver(function () { Combine() });
-                    const observer2 = new MutationObserver(function () { Combine() });
+                    });
+                if (!(canv.ariaDescription && canv.ariaDescription))
+                {
+                    const observer = new MutationObserver(Combine); 
+                    const observer2 = new MutationObserver(Combine);
                     // Call 'observe' on the MutationObserver instance, specifying the element to observe
                     observer.observe(canv, { childList: true });
-
-                    // Call 'observe' on the MutationObserver instance, specifying the element to observe
                     observer2.observe(canv2, { childList: true });
                     canv.ariaDescription = "f";
                     canv2.ariaDescription = "f";
                 }
-
             }
         });
     }
-
 }
 /**
  * Adds EventListener to new Buttons, when new ViewWindow is created.

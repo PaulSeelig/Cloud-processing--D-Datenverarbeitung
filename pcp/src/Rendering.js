@@ -66,7 +66,7 @@ function RenderFileOnCanvas(files, canvas, tMatrix, params1, params2) {
             const interPp = raycasterPP.intersectObject(Points)[0];
             const P = !interPp? null : interPp.object;
             if (P) {
-                console.info(P.point + "removed to zero");
+                console.info(P.position + "removed to zero");
                 P.position.copy(PZero.position);
                 canvas.textContent = '';
                 PCounter--;
