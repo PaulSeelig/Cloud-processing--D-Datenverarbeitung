@@ -9,14 +9,13 @@
           }
         }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" ></script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="VStyle.css">
     <title>Point-Cloud-Processing</title>
 </head>
-
-
 
 <body>
     <div class="option-menu-bar">
@@ -35,7 +34,6 @@
             Pick-Pt-Size
             <input type="range" name="pick_pointsize" class="pointsize" min="1" max="1000000" value="300000" />
         </label>
-        <!--<input type="range" name="pointsize" class="pointsize" min="1" max="1000000" value="1" />-->
     </div>
 
     <div class="objViewWin minimized" id="Dialog"><p></p></div>
@@ -56,12 +54,10 @@
             </div>
             <div class="Open_Further_Options_Container minimized">
                 <h2>No Model Yet...</h2>
-                <!--<input type="checkbox" name="rotate" class="rotateBtn objViewBtn" />-->
                 <label name="model-color">
                     Model-Color
                     <input type="color" name="colors" class="color" value="#bbbbbb" />
                 </label>
-                <!--<input type="file" name="chooseFile" class="import" accept=".ply, .xyz, .STL" />-->
                 <label name="pt-size">
                     Model-Pt-Size
                     <input type="range" name="pointsize" class="pointsize" min="1" max="1000000" value="1" />
@@ -71,7 +67,6 @@
             <p class="hint"><input type="file" name="chooseFile" class="dragndrop" accept=".ply, .xyz, .STL" />Drag and Drop a .ply, .stl or .xyz file here</p>
         </div>
     </div>
-
     <div id="root"></div>
     <script type="module" src="./src/Main.js" crossorigin="anonymous"></script>
 </body>

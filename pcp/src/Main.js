@@ -1,10 +1,10 @@
 import RenderFileOnCanvas from "./Rendering";
-import ScanService from "./services/3DScanService"
+import ScanService from "./services/3DScanService";
+//import * as fload from 'FileLoader';
 
 var DialogLine = 1;
 var fileIndex = 0;
-
-const MaxWindows = 8;
+const MaxWindows = 3;
 
 //Added By Audrik
 const scanService = new ScanService('http://localhost:18080');
@@ -29,6 +29,15 @@ function setup() {
     AssignBtns();
     AddView();
 }
+async function RemoveAllEmptyViews() {
+
+    const imports = document.querySelectorAll('[type="file"]');
+    for (const imp of imports) {
+        var canvasTxtCont = imp.parentNode.parentNode.querySelector('canvas').textContent;
+        !imp.files[0] && canvasTxtCont == '' ? RemoveView(imp, true) & Delay(1200) : '';
+    }
+    return true;
+}
 /**
  * Checks if Combine-Conditions are met,
  * if not, it returns a error-Message/a simple string
@@ -36,21 +45,23 @@ function setup() {
  */
 function CheckCombineConditions()
 {
-    if (document.querySelector('#objViewCont').childElementCount >= MaxWindows)
+    const imports = document.querySelectorAll('[type="file"]');
+    var files = 0;
+    var PPoints = 0;
+    for (const imp of imports)
     {
-        return "Sorry u can't have more than " + MaxWindows + " Views. Please remove a View before creating the next one, by combining two";
+        var canvasTxtCont = imp.parentNode.parentNode.querySelector('canvas').textContent;
+        imp.files[0] ? files++ & (canvasTxtCont != '' ? PPoints++ : '') : '';
     }
-    else {
-        const imports = document.querySelectorAll('[type="file"]');
-        var files = 0;
-        var PPoints = 0;
-        for (const imp of imports)
-        {
-            var canvasPPoints = imp.parentNode.parentNode.querySelector('canvas').textContent;
-            imp.files[0] ? files++ & (canvasPPoints != '' ? PPoints++ : "" ) : "";
-        }
-        return files < 2 ? "You need as least two files" : PPoints < 2 ? "you need atleast two models with each three picked points on them. [the first two models that met the conditions, are used for combine]" : null;
-    }
+    if (files < 2)
+        return "You need as least two files";
+    else if (PPoints < 2)
+        return "you need atleast two models with each three picked points on them. [the first two models that met the conditions, are used for combine]";
+
+    RemoveAllEmptyViews().then(e=> {
+        if (document.querySelector('#objViewCont').childElementCount >= MaxWindows)
+            return "Sorry u can't have more than " + MaxWindows + " Views. Please remove a View before creating the next one, by combining two";
+    });
 }
 /** combines two 3D-Models, if the CombineConditions are met. 
  * Sets Observer on the 2 origin view-canvas in case the corresponding pickpoints are reset, the existing combine-view will only update the matrix, but not reload the Models 
@@ -77,7 +88,7 @@ function Combine(silent)
                 !canv ? canv = canvas : canv2 = canvas;
             }
         }
-        const title = "CombineView: " + files[0].name + " + " + files[1].name;
+        const title = files[0].name + " + " + files[1].name;
         var view = null;
         for (const objView of document.querySelectorAll('.objViewWin')) { title == objView.title ? view = objView : '' }
         const js = JSON.stringify(PickPoints);
@@ -91,8 +102,7 @@ function Combine(silent)
                 var params1 = [canv.parentNode.querySelector('[name="pointsize"]'), canv.parentNode.querySelector('[name="colors"]')];
                 var params2 = [canv2.parentNode.querySelector('[name="pointsize"]'), canv2.parentNode.querySelector('[name="colors"]')];
 
-                AddView(files, JSON.parse(resp), params1, params2)
-                    .then(view =>
+                AddView(files, JSON.parse(resp), params1, params2).then(view =>
                     {
                         view.querySelector('.ICPBtn').classList.remove('hidden');
                         view.querySelector('.Download').classList.remove('hidden');
@@ -107,7 +117,8 @@ function Combine(silent)
                         });
                         view.querySelector('.Download').addEventListener('click', function ()
                         {
-                            view.querySelector('canvas').textContent;
+                            var myBlob = new File([view.querySelector('canvas').textContent], "MergeMatrix_(" + title + ")" + ".txt", { type: "text/plain; charset=utf-8" });
+                           saveAs(myBlob);
                         });
                     });
                 if (!(canv.ariaDescription && canv.ariaDescription))
@@ -146,7 +157,6 @@ function MinimizeView(evlement) {
     else if (!view.classList.contains('minimized'))
     {
         view.classList.add('minimized');
-        //view.querySelector('.rotateBtn').checked = false;
         const btn = document.createElement("button");
         btn.innerHTML = view.title;
         btn.addEventListener("click", function () {
@@ -196,21 +206,13 @@ async function RemoveFile(evlement)
 {
     try
     {
-       // const view = evlement.parentNode.parentNode;
         var res = await scanService.Delete3DFile(evlement)
-        //var viewCont = document.getElementById("objViewCont");
-        //await viewCont.removeChild(view);
-        //Delay(1000)
-        //await AddView(null);
-        AddToDialog(res)
+        console.log(res);
     }
     catch (error)
     {
         console.error('Error deleting file:', error);
-        AddToDialog(`Error deleting file: ${error.message}`);
     }
-
-
 }
 /**
  * Takes files from html input elements and puts them in visualFile(objView, file)
@@ -224,7 +226,7 @@ async function ImportFile(eventtarget)
     {
         const file = [eventtarget.files[0]];
         var fileEnd = '.' + file[0].name.split(".").at(-1).toLowerCase();
-        if ( ! (fileEnd == '.ply' || fileEnd == '.stl' || fileEnd == '.xyz') )
+        if (!(fileEnd == '.ply' || fileEnd == '.stl' || fileEnd == '.xyz'))
         {
             AddToDialog('this doesn\'t seem to be the correct format. ... We\'re not supporting ' + fileEnd + '-formated files... we only work with .ply .xyz & .stl -formats for now');
         }
@@ -232,27 +234,22 @@ async function ImportFile(eventtarget)
         {
             const view = eventtarget.parentNode.parentNode;
             view.ariaValueNow = fileIndex++;
-            
 
-            // Modified By Audrik --- 
-            try
-            {
-                visualFile(view, file);
-                await scanService.Import3dScan(file[0], fileEnd);
-                console.log('File successfully uploaded and validated:');
-                AddToDialog(`File successfully uploaded`);
-            }
-            catch (error)
-            {
+            // Modified By Audrik ---
+            visualFile(view, file);
+            await scanService.Import3dScan(file[0], fileEnd).then(resp => {
+                console.log(resp);
+                AddToDialog(resp);
+            }).catch(error => {
                 console.error('Error uploading file:', error);
                 AddToDialog(`Error uploading file: ${error.message}`);
-            }
+            });
         }       
     }
 }
 
 function visualFile(objView, files, tMatrix, params1, params2) {
-    objView.title = files.length == 1 ? files[0].name : "CombineView: " + files[0].name + " + " + files[1].name;
+    objView.title = files.length == 1 ? files[0].name : files[0].name + " + " + files[1].name;
     const h2 = objView.querySelector('h2');
     h2.innerHTML = files[0].name;
     if(files.length == 2){
@@ -267,6 +264,7 @@ function visualFile(objView, files, tMatrix, params1, params2) {
     objView.querySelector('.hint').classList.add("hidden");
     files.onload = RenderFileOnCanvas(files, canvas, tMatrix, params1, params2);
 }
+
 /**
  * takes a string or similar and displays it in the website
  * (if the dialog in the website is hidden, it will open when new messages arrive)
@@ -275,9 +273,6 @@ function visualFile(objView, files, tMatrix, params1, params2) {
 function AddToDialog(diamessage) {
     document.querySelector('#Dialog p').innerHTML += "<br>" + DialogLine + ": " + diamessage;
     DialogLine++;
-    if (document.querySelectorAll('#Dialog.minimized').length > 0) {
-        document.querySelector('#Dialog').classList.remove('minimized');
-    }
 }
 function HideShowOptions(optionsBtnCheck) {
     const optionsCont = optionsBtnCheck.parentNode.parentNode.querySelector('.Open_Further_Options_Container');
@@ -306,24 +301,25 @@ async function RemoveView(evlement, doDelete) {
     const mvcount = miniviewCont.childElementCount;
     if (viewCont.childElementCount - mvcount > 1 || mvcount > 0) {
         if (viewCont.childElementCount - mvcount == 1) { miniviewCont.childNodes[0].click() }
-        if (!doDelete) {
+        if (!doDelete)
             MinimizeView(evlement)
-        }
-        else {
+        else
+        {
             view.classList.add('minimized');
             await Delay(1000);
             viewCont.removeChild(view);
             view.ariaValueNow? scanService.Delete3DFile(view.ariaValueNow) : '';
         }
-        if (viewCont.childElementCount == (MaxWindows - 1)) {
+        if (viewCont.childElementCount == (MaxWindows - 1))
             document.getElementById('Addbtn').classList.remove("not_accessible");
-        }
-        if (viewCont.childElementCount - mvcount == 1) {
+        if (viewCont.childElementCount - mvcount == 1)
+        {
             viewCont.querySelector('.closeBtn').classList.add("not_accessible");
             viewCont.querySelector('.miniBtn').classList.add("not_accessible");
         }
     }
-    else {
+    else
+    {
         AddToDialog(dias[dialin]);
         dialin += dialin < (dias.length - 1) ? 1 : 0;
     }

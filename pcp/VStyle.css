@@ -119,8 +119,11 @@ input.pointsize {
     background-size: calc(100vw + 10px);
     background-repeat: no-repeat;
 }
-#Dialog {
+#Dialog:hover {
     max-height: 40%;
+}
+    #Dialog {
+    max-height: 4%;
     max-width: 100%;
     position: absolute;
     bottom: 0;

@@ -5,13 +5,15 @@ class ScanService {
 
 
     async Delete3DFile(fileIndex) {
+        var ans = "";
         await fetch(`${this.baseUrl}/delete3DFile`, {
             method: 'Post',
             body: fileIndex
         }).then(response => {
             response.text();
-            return response;
-            });
+            ans = response;
+        });
+        return ans;
     }
 
     async Import3dScan(file, fileEnd) {
@@ -19,17 +21,17 @@ class ScanService {
         formData.append('FileContent', file);
         formData.append('FileEnd', fileEnd);
         formData.append('Name', file.name);
+        var resp = "";
 
-
-        const response = await fetch(`${this.baseUrl}/Import3dScan`, {
+        await fetch(`${this.baseUrl}/Import3dScan`, {
             method: 'POST',
             body: formData
         }).then(response => response.text())
             .then(data => {
                 console.log(data);
-            });
-
-        return response;
+                resp = data;
+            }).catch(error => { return error });
+        return resp;
     }
 
     async PickPointsMerge(points) {
@@ -46,15 +48,16 @@ class ScanService {
     }
 
     async ICPmerge(matrix) { //[Matrix] = matrix ; [Filename1] [filname2]
+        var answer = "";
         await fetch(`${this.baseUrl}/mergeImportedFiles`, {
             method: 'POST',
             body: matrix,
             redirect: "follow"
         }).then(response => response.text())
             .then(data => {
-                return data;
+                answer = data;
             });
-       
+        return answer;
     }
 }
 
