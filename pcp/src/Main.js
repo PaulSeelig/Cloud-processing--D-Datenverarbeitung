@@ -46,18 +46,19 @@ function CheckCombineConditions()
         var PPoints = 0;
         for (const imp of imports)
         {
-            var canvas = imp.parentNode.parentNode.querySelector('canvas');
-            imp.files[0] ? files++ : ""; canvas.textContent != '' && imp.files[0] ? PPoints++ : "";
+            var canvasPPoints = imp.parentNode.parentNode.querySelector('canvas').textContent;
+            imp.files[0] ? files++ & (canvasPPoints != '' ? PPoints++ : "" ) : "";
         }
-        return files < 2 ? "You need as least two files" : PPoints < 2 ? "you need atleast two models with each three pickedpoints on them, the first two are used for combine" : null;
+        return files < 2 ? "You need as least two files" : PPoints < 2 ? "you need atleast two models with each three picked points on them. [the first two models that met the conditions, are used for combine]" : null;
     }
 }
 /** combines two 3D-Models, if the CombineConditions are met. 
- * Sets Observer on the 2 origin view-canvas in case the corresponding pickpoints are reset, the existing combine-view will only update the matrix, but not reload the Models*/
-function Combine()
+ * Sets Observer on the 2 origin view-canvas in case the corresponding pickpoints are reset, the existing combine-view will only update the matrix, but not reload the Models 
+ * if Combine() is called by observer, silent is true and the message is not shown in the dialog.*/
+function Combine(silent)
 {
     const errormsg = CheckCombineConditions(); 
-    if (errormsg) { AddToDialog(errormsg) } 
+    if (errormsg) { !silent ? AddToDialog(errormsg) : ''; } 
     else
     {
         const files = [];
@@ -72,7 +73,7 @@ function Combine()
                 var pp = JSON.parse(canvas.textContent);
                 files.push(imp.files[0]);
                 PickPoints.push(pp[0], pp[1], pp[2]);
-                MiniView(imp);
+                MinimizeView(imp);
                 !canv ? canv = canvas : canv2 = canvas;
             }
         }
@@ -111,8 +112,8 @@ function Combine()
                     });
                 if (!(canv.ariaDescription && canv.ariaDescription))
                 {
-                    const observer = new MutationObserver(Combine); 
-                    const observer2 = new MutationObserver(Combine);
+                    const observer = new MutationObserver(function () { Combine(true) }); 
+                    const observer2 = new MutationObserver(function () { Combine(true) });
                     // Call 'observe' on the MutationObserver instance, specifying the element to observe
                     observer.observe(canv, { childList: true });
                     observer2.observe(canv2, { childList: true });
@@ -131,23 +132,14 @@ function Combine()
 function AssignBtns() {
     document.querySelector('.objViewWin:last-child .closeBtn').addEventListener("click", event => { RemoveView(event.target, true) });
     document.querySelector('.objViewWin:last-child .miniBtn').addEventListener("click", event => { RemoveView(event.target, false) });
-    //var importinput = document.querySelector('.objViewWin:last-child .import');
-    //importinput.addEventListener("change", event => { ImportFile(event.target) });
     document.querySelector('.objViewWin:last-child input.dragndrop').addEventListener("change", event => { ImportFile(event.target) });
-    //document.querySelector('.objViewWin:last-child .clearBtn').addEventListener("click", event => { RemoveFile(event.target) });
-
     document.querySelector('.objViewWin:last-child .Open_Further_Options').addEventListener("change", event => { HideShowOptions(event.target) });
-     //document.querySelector('canvas').textContent.addEventListener("change", event => {
-    //    var check = CheckCombineConditions();
-    //    const combtn = document.querySelector('#combine');
-    //    check ? combtn.classList.add('not_accessible') : combtn.remove('not_accessible');
-    //})
 }
 /**
  * minimizing a ViewWindow with content, but deletes empty one.
  * @param {any} evlement
  */
-function MiniView(evlement) {
+function MinimizeView(evlement) {
     const view = evlement.parentNode.parentNode;
     
     if (view.title == "") { RemoveView(evlement, true); }
@@ -200,14 +192,11 @@ async function AddView(combineFiles, tMatrix, params1, params2) {
     }
     
 }
-
-function RemoveFiles() {
-    RemoveFile(null)
-}
-async function RemoveFile(evlement) {
-    try {
-        const view = evlement.parentNode.parentNode;
-
+async function RemoveFile(evlement)
+{
+    try
+    {
+       // const view = evlement.parentNode.parentNode;
         var res = await scanService.Delete3DFile(evlement)
         //var viewCont = document.getElementById("objViewCont");
         //await viewCont.removeChild(view);
@@ -215,7 +204,8 @@ async function RemoveFile(evlement) {
         //await AddView(null);
         AddToDialog(res)
     }
-    catch (error) {
+    catch (error)
+    {
         console.error('Error deleting file:', error);
         AddToDialog(`Error deleting file: ${error.message}`);
     }
@@ -228,7 +218,8 @@ async function RemoveFile(evlement) {
  * also tries to send files to server
  * @param {any} eventtarget
  */
-async function ImportFile(eventtarget) {
+async function ImportFile(eventtarget)
+{
     if (eventtarget.files.length > 0)
     {
         const file = [eventtarget.files[0]];
@@ -244,21 +235,19 @@ async function ImportFile(eventtarget) {
             
 
             // Modified By Audrik --- 
-            try {
+            try
+            {
                 visualFile(view, file);
                 await scanService.Import3dScan(file[0], fileEnd);
                 console.log('File successfully uploaded and validated:');
-                //response.onload = AddToDialog(response.text());
                 AddToDialog(`File successfully uploaded`);
-                //const text = await response.text(); // Hier wird der Text korrekt ausgelesen
-                //console.log(text);
             }
-            catch (error) {
+            catch (error)
+            {
                 console.error('Error uploading file:', error);
                 AddToDialog(`Error uploading file: ${error.message}`);
             }
-        }
-                
+        }       
     }
 }
 
@@ -318,7 +307,7 @@ async function RemoveView(evlement, doDelete) {
     if (viewCont.childElementCount - mvcount > 1 || mvcount > 0) {
         if (viewCont.childElementCount - mvcount == 1) { miniviewCont.childNodes[0].click() }
         if (!doDelete) {
-            MiniView(evlement)
+            MinimizeView(evlement)
         }
         else {
             view.classList.add('minimized');
