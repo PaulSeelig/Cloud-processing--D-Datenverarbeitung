@@ -1,7 +1,6 @@
 import RenderFileOnCanvas from "./Rendering";
 import ScanService from "./services/3DScanService";
 //import * as fload from 'FileLoader';
-
 var DialogLine = 1;
 var fileIndex = 0;
 const MaxWindows = 3;
@@ -88,52 +87,58 @@ function Combine(silent)
                 !canv ? canv = canvas : canv2 = canvas;
             }
         }
-        const title = files[0].name + " + " + files[1].name;
-        var view = null;
-        for (const objView of document.querySelectorAll('.objViewWin')) { title == objView.title ? view = objView : '' }
-        const js = JSON.stringify(PickPoints);
-        scanService.PickPointsMerge(js).then(resp =>
-        {
-            AddToDialog(resp);
-            if (view) {
-                view.querySelector('canvas').textContent = resp;
-            }
-            else {
-                var params1 = [canv.parentNode.querySelector('[name="pointsize"]'), canv.parentNode.querySelector('[name="colors"]')];
-                var params2 = [canv2.parentNode.querySelector('[name="pointsize"]'), canv2.parentNode.querySelector('[name="colors"]')];
 
-                AddView(files, JSON.parse(resp), params1, params2).then(view =>
-                    {
+        //Added By Audrick
+        let correctAlignement = checkAlignment(PickPoints, 15);  // Check for alignment within 5 degrees
+        console.log("Are the points aligned within 5 degrees? " + correctAlignement);
+        //--------------------
+
+        if (correctAlignement) {
+            const title = files[0].name + " + " + files[1].name;
+            var view = null;
+            for (const objView of document.querySelectorAll('.objViewWin')) { title == objView.title ? view = objView : '' }
+            const js = JSON.stringify(PickPoints);
+            scanService.PickPointsMerge(js).then(resp => {
+                AddToDialog(resp);
+                if (view) {
+                    view.querySelector('canvas').textContent = resp;
+                }
+                else {
+                    var params1 = [canv.parentNode.querySelector('[name="pointsize"]'), canv.parentNode.querySelector('[name="colors"]')];
+                    var params2 = [canv2.parentNode.querySelector('[name="pointsize"]'), canv2.parentNode.querySelector('[name="colors"]')];
+
+                    AddView(files, JSON.parse(resp), params1, params2).then(view => {
                         view.querySelector('.ICPBtn').classList.remove('hidden');
                         view.querySelector('.Download').classList.remove('hidden');
 
-                        view.querySelector('.ICPBtn').addEventListener('click', function ()
-                        {
+                        view.querySelector('.ICPBtn').addEventListener('click', function () {
                             scanService.ICPmerge(view.querySelector('canvas').textContent)
-                                .then(ICP_processed_matrix =>
-                                {
+                                .then(ICP_processed_matrix => {
                                     view.querySelector('canvas').textContent = ICP_processed_matrix;
                                 });
                         });
-                        view.querySelector('.Download').addEventListener('click', function ()
-                        {
+                        view.querySelector('.Download').addEventListener('click', function () {
                             var myBlob = new File([view.querySelector('canvas').textContent], "MergeMatrix_(" + title + ")" + ".txt", { type: "text/plain; charset=utf-8" });
-                           saveAs(myBlob);
+                            saveAs(myBlob);
                         });
                     });
-                if (!(canv.ariaDescription && canv.ariaDescription))
-                {
-                    const observer = new MutationObserver(function () { Combine(true) }); 
-                    const observer2 = new MutationObserver(function () { Combine(true) });
-                    // Call 'observe' on the MutationObserver instance, specifying the element to observe
-                    observer.observe(canv, { childList: true });
-                    observer2.observe(canv2, { childList: true });
-                    canv.ariaDescription = "f";
-                    canv2.ariaDescription = "f";
+                    if (!(canv.ariaDescription && canv.ariaDescription)) {
+                        const observer = new MutationObserver(function () { Combine(true) });
+                        const observer2 = new MutationObserver(function () { Combine(true) });
+                        // Call 'observe' on the MutationObserver instance, specifying the element to observe
+                        observer.observe(canv, { childList: true });
+                        observer2.observe(canv2, { childList: true });
+                        canv.ariaDescription = "f";
+                        canv2.ariaDescription = "f";
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            AddToDialog("Points Are Not Aligned Correctly")
+        }
     }
+   
+        
 }
 /**
  * Adds EventListener to new Buttons, when new ViewWindow is created.
@@ -325,4 +330,49 @@ async function RemoveView(evlement, doDelete) {
     }
     RemoveFile(evlement)
 }
+
+
+
+//Functions for Alignement Check
+function calculateVector(p1, p2) {
+    return {
+        x: p2.x - p1.x,
+        y: p2.y - p1.y,
+        z: p2.z - p1.z
+    };
+}
+
+function vectorMagnitude(v) {
+    return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+function dotProduct(v1, v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
+function calculateAngle(v1, v2) {
+    let dot = dotProduct(v1, v2);
+    let magnitude1 = vectorMagnitude(v1);
+    let magnitude2 = vectorMagnitude(v2);
+    let cosineOfAngle = dot / (magnitude1 * magnitude2);
+    return Math.acos(cosineOfAngle) * (180 / Math.PI);  // Convert radians to degrees
+}
+
+function checkAlignment(points, errorDegrees) {
+    console.log(points)
+    for (var i = 0; i < 3; i++) {
+        if (Math.abs(Math.abs(points[i].y) - Math.abs(points[i+3].y)) > errorDegrees ||
+            Math.abs(Math.abs(points[i].z) - Math.abs(points[i+3].z)) > errorDegrees
+        ) {
+            return false
+        }
+       
+    }
+    return true;
+
+    let angle = calculateAngle(vector1, vector2);
+    return Math.abs(angle) <= errorDegrees || Math.abs(angle - 180) <= errorDegrees;
+}
+
+
 window.addEventListener("load", setup);
